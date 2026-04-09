@@ -431,7 +431,7 @@ values:
 
 Leave these markers UNCHANGED — they belong to Step 11:
 
-- `<!-- CUSTOMIZE: linear team uuid -->`
+- `<!-- CUSTOMIZE: linear team prefix -->`
 - `<!-- CUSTOMIZE: linear workspace slug -->`
 
 Use an atomic write (write to a temp file, then rename) to avoid
@@ -475,14 +475,15 @@ AskUserQuestion(
       header: "Workspace"
     },
     {
-      question: "What's your Linear team key or UUID? (e.g., 'ENG' for team prefix ENG-, or the team's UUID)",
+      question: "What's your Linear team prefix? (3-letter uppercase code, e.g., 'APP', 'ENG', 'LAN')",
       header: "Team"
     }
   ]
 )
 ```
 
-Store as `{workspace}` and `{team}`.
+Store as `{workspace}` and `{team}`. The team value must be the
+3-letter prefix, not a UUID.
 
 **B. Write skills/linear-cli/SKILL.md:**
 
@@ -540,9 +541,26 @@ Read the current yaml. Replace:
 | Marker | Replacement |
 |---|---|
 | `<!-- CUSTOMIZE: linear workspace slug -->` | `{workspace}` |
-| `<!-- CUSTOMIZE: linear team uuid -->` | `{team}` |
+| `<!-- CUSTOMIZE: linear team prefix -->` | `{team}` |
 
 Use an atomic write (temp file + rename).
+
+**C.1. Populate .linear.toml at the project root:**
+
+If `.linear.toml` exists at the project root, read its current
+content. Replace:
+
+| Marker | Replacement |
+|---|---|
+| `<!-- CUSTOMIZE: workspace -->` | `{workspace}` |
+| `<!-- CUSTOMIZE: team-prefix -->` | `{team}` |
+
+Use an atomic write.
+
+Once `.linear.toml` is populated, the `linear` CLI reads `workspace`
+and `team_id` from it automatically — no `--workspace` flag needed on
+subsequent calls. The flags in the command templates remain redundant
+but harmless.
 
 **D. Propagate workspace to all command files:**
 
@@ -712,6 +730,7 @@ Report to the user in this structure:
 - `CLAUDE.md` — stack and agent info
 - `.ao/worker-rules.md` — agent routing table and test command
 - `agent-orchestrator.yaml` — project metadata + Linear team/workspace
+- `.linear.toml` — Linear CLI workspace + team config
 - `skills/linear-cli/SKILL.md` — Linear CLI configuration
 
 **Linear environment**: {status from Step 12}

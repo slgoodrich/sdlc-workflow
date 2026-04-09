@@ -20,7 +20,8 @@ project:
   error_handling, context7-lookup, git-workflow, issue-breakdown,
   self-running-architecture)
 - `.ao/` — worker-rules.md for Agent Orchestrator
-- Project root — `agent-orchestrator.yaml` and `CLAUDE.md` scaffolds
+- Project root — `agent-orchestrator.yaml`, `CLAUDE.md`, and
+  `.linear.toml` scaffolds
 
 The copy is **idempotent**. Existing files are never overwritten.
 Re-running `/scaffold` is safe and will only copy files that are

@@ -111,8 +111,6 @@ block's issue view). Use this mapping:
 | `Type \| Feature` | `feat/` | `feat` |
 | `Type \| Improvement` | `feat/` | `feat` |
 | `Type \| Bug` | `fix/` | `fix` |
-| `Type \| Tech Debt` | `refactor/` | `refactor` |
-| `Type \| Testing` | `test/` | `test` |
 | unknown / missing | `feat/` | `feat` (safe fallback) |
 
 Store as `{branch_prefix}` and `{commit_prefix}` for use in later

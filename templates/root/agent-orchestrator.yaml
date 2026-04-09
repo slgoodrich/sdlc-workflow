@@ -19,7 +19,7 @@ projects:
 
     tracker:
       plugin: linear
-      teamId: "<!-- CUSTOMIZE: linear team uuid -->"
+      teamId: "<!-- CUSTOMIZE: linear team prefix -->"
       workspaceSlug: "<!-- CUSTOMIZE: linear workspace slug -->"
 
     symlinks: [.claude, .env, .env.local]

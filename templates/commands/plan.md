@@ -26,9 +26,15 @@ sections owned by other commands.
   `## Original Request` at the top of the description.
 - Use the requirements-engineer sub-agent only if requirements are
   sparse. Don't invoke it if 3+ maturity checks already pass.
-- For high-complexity work (5+ files), create Linear sub-issues and
-  update the parent to an Epic summary. Do NOT write a full Plan to
-  the parent in that case.
+- **For breakdown decisions (when to split and how), read
+  `.claude/rules/issue-breakdown.md` first.** That document is the
+  authoritative source for complexity heuristics, split dimensions,
+  required labels, and sub-issue requirements. Do not improvise
+  breakdown criteria.
+- For high-complexity work (5+ files per the heuristic in
+  `issue-breakdown.md`), create Linear sub-issues and update the
+  parent to an Epic summary. Do NOT write a full Plan to the parent
+  in that case.
 - If multiple identifiers provided, process them SEQUENTIALLY.
   Complete all steps for one issue before moving to the next.
 
@@ -108,28 +114,44 @@ Do NOT implement anything."
 
 ### Step 4: Assess breakdown need
 
-Determine if the work needs breakdown based on:
+**Read `.claude/rules/issue-breakdown.md` first.** It is the
+authoritative source for breakdown criteria. Use its Complexity
+Heuristic (Low 1-2 files, Medium 3-4, High 5+) to decide whether
+this work needs breakdown.
+
+High complexity (5+ files) MUST be broken down. Also break down if
+any of the following apply, per `issue-breakdown.md`:
 
 - Multiple distinct components or features
 - Cross-cutting concerns (FE + BE + DB)
-- Would require 5+ files to implement
-- Multiple independent work streams
+- Multiple independent work streams that can proceed in parallel
 
 **If breakdown needed**: Continue to Step 5.
 **If NOT needed**: Skip to Step 6.
 
 ### Step 5: Break down into sub-issues
 
-Each sub-issue should:
+Follow the guidance in `.claude/rules/issue-breakdown.md` for the
+full breakdown methodology. Key rules from that document:
 
-- Be completable in one session
-- Touch 1-4 files (Low/Medium complexity)
-- Have clear "done" criteria
-- Be independently verifiable
+- **MOVE, don't copy.** Strip detailed implementation from the parent
+  and distribute it to sub-issues. The parent becomes an Epic summary
+  with only: goal, success criteria, and a list of sub-issue IDs.
+- **Vertical slices over horizontal layers.** Split along user-
+  visible features, not along BE/FE/DB layers.
+- **Each sub-issue should be Low or Medium** (1-4 files). Never
+  create a High-complexity sub-issue — break it down further.
+- **Happy path first**, edge cases as separate issues.
+- **Infrastructure** (new tables, new services) gets its own issue.
+- **Every sub-issue needs all 4 label categories**: Type, Scope,
+  Complexity, Version.
+- **Add the `Type | Epic` label to the parent** after breakdown.
 
 **A. Plan the split:**
 
 List the logical pieces, their dependencies, and the sequencing.
+Verify each piece fits the Low/Medium complexity heuristic from
+`issue-breakdown.md`.
 
 **B. Create sub-issues in Linear:**
 

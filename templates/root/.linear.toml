@@ -1,0 +1,4 @@
+team_id = "<!-- CUSTOMIZE: team-prefix -->"
+workspace = "<!-- CUSTOMIZE: workspace -->"
+issue_sort = "priority"
+vcs = "git"

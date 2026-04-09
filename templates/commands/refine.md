@@ -44,9 +44,14 @@ breakdown for high-complexity work.**
 - `## Plan` is required. Stop and tell the user to run `/plan` first
   if the description lacks a Plan section.
 - `## Design` is optional. Backend work may skip `/design`.
-- For high-complexity work (5+ files), create Linear sub-issues and
-  recommend running `/refine` on each. Do NOT also write a Technical
-  Spec to the parent in that case.
+- **For breakdown decisions (when to split and how), read
+  `.claude/rules/issue-breakdown.md` first.** That document is the
+  authoritative source for complexity heuristics, split dimensions,
+  required labels, and sub-issue requirements. Do not improvise
+  breakdown criteria.
+- For high-complexity work (5+ files per `issue-breakdown.md`),
+  create Linear sub-issues and recommend running `/refine` on each.
+  Do NOT also write a Technical Spec to the parent in that case.
 - Do NOT populate the Agent Routing table above. It is filled by
   `/customize` per project.
 - If multiple identifiers provided, process them SEQUENTIALLY.
@@ -86,11 +91,15 @@ fails, fall back to empty and log:
 
 ### Step 2: Assess complexity
 
+**Read `.claude/rules/issue-breakdown.md` first.** Use its Complexity
+Heuristic (Low 1-2 files, Medium 3-4, High 5+) to classify this
+work.
+
 From the Plan section and (optional) Design section, determine:
 
 1. **Scope**: How many files will this touch?
 2. **Nature**: What area of the codebase?
-3. **Complexity**: Low / Medium / High?
+3. **Complexity**: Low / Medium / High (per `issue-breakdown.md`)?
 
 **Decision tree:**
 
@@ -104,7 +113,20 @@ Is Low/Medium complexity?
 
 ### Step 3: Technical Breakdown (High complexity only)
 
-Break the work into smaller pieces.
+Follow the guidance in `.claude/rules/issue-breakdown.md` for the
+full breakdown methodology. Key rules from that document:
+
+- **MOVE, don't copy.** Move implementation details from the parent
+  into sub-issues. The parent becomes an Epic summary.
+- **Vertical slices over horizontal layers.** Split along user-
+  visible features, not BE/FE/DB boundaries.
+- **Each sub-issue should be Low or Medium** (1-4 files). Never
+  create a High-complexity sub-issue — break it down further.
+- **Happy path first**, edge cases as separate issues.
+- **Infrastructure** (new tables, new services) gets its own issue.
+- **Every sub-issue needs all 4 label categories**: Type, Scope,
+  Complexity, Version.
+- **Add the `Type | Epic` label to the parent** after breakdown.
 
 **A. Plan the split:**
 
@@ -114,7 +136,8 @@ Group work by:
 - Dependency order (what must come first?)
 - Logical units (related files that change together)
 
-Target: Each piece should be 1-4 files (Low or Medium complexity).
+Target: Each piece should be 1-4 files (Low or Medium complexity per
+`issue-breakdown.md`).
 
 **B. Create sub-issues in Linear:**
 
