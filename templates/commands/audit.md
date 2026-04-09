@@ -20,7 +20,7 @@ opportunities.
 ## Context
 
 - Argument / scope: $ARGUMENTS
-- Existing audit issues: !`linear issue list --workspace <!-- CUSTOMIZE: workspace --> --label "Audit" --limit 20`
+- Existing audit issues: !`linear issue list --label "Audit" --limit 20`
 
 ## Standing Instructions
 
@@ -245,7 +245,6 @@ is still open, skip — do not create a duplicate.
 
 ```bash
 linear issue create \
-  --workspace <!-- CUSTOMIZE: workspace --> \
   --title "Audit: {finding title}" \
   --label "Audit" \
   --label "{Critical | High}" \

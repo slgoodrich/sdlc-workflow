@@ -20,7 +20,7 @@ the `## Technical Spec` section of the Linear issue description.
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace -->`
+- Issue: !`linear issue view $ARGUMENTS`
 - Current branch: !`git branch --show-current`
 
 ## Standing Instructions
@@ -188,7 +188,25 @@ For each task in the Technical Spec's Task Breakdown:
 - Do NOT write to Linear during task execution. The only Linear
   write is the final `[build-done]` comment in Step 5.
 
-### Step 4: Commit
+### Step 4: Sync with main and commit
+
+Merge main into the feature branch before committing. This catches
+conflicts while the build agent still has full implementation context
+loaded — if a conflict hits a file it just wrote, it can resolve with
+intent, not archaeology.
+
+```bash
+git fetch origin main
+git merge origin/main
+```
+
+**If conflicts**: Resolve them, preserving the implementation's
+correctness. Re-run the project's test suite after resolving to
+confirm nothing broke.
+
+**If clean merge (or fast-forward)**: Continue.
+
+Then stage and commit:
 
 ```bash
 git add -A
@@ -198,14 +216,18 @@ $ARGUMENTS"
 ```
 
 Use `{commit_prefix}` from Step 1's Type-label mapping (e.g., `feat`,
-`fix`, `refactor`, `test`). This matches the branch prefix so the
-commit type stays consistent with the issue type.
+`fix`). This matches the branch prefix so the commit type stays
+consistent with the issue type.
 
 Use a single conventional commit covering the full implementation. If
 the scope of changes warrants multiple commits, split logically — in
 that case, individual commits can use different type prefixes
 (`test:` for test-only commits, `docs:` for doc-only commits) as long
 as the primary commit uses `{commit_prefix}`.
+
+**Note**: `/build` commits locally but does NOT push. Pushing the
+branch and opening the PR is `/test`'s responsibility (after tests
+are written and passing).
 
 ### Step 5: Summarize and mark complete
 
@@ -219,7 +241,7 @@ Report to the user:
 Append a single completion comment to the Linear issue:
 
 ```bash
-linear issue comment add $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --body "[build-done] Build complete. $(date +%Y-%m-%d)"
+linear issue comment add $ARGUMENTS --body "[build-done] Build complete. $(date +%Y-%m-%d)"
 ```
 
 The comment is a marker only. `/test` reads the file list from

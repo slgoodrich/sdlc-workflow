@@ -38,7 +38,7 @@ Appends a `## Design` section to the Linear issue description with:
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace -->`
+- Issue: !`linear issue view $ARGUMENTS`
 
 ## Standing Instructions
 
@@ -281,7 +281,7 @@ Existing sections may include any subset of:
 **Write the updated description:**
 
 ```bash
-linear issue edit $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --description "{full_content}"
+linear issue edit $ARGUMENTS --description "{full_content}"
 ```
 
 ### Step 6: Present summary
@@ -298,7 +298,7 @@ Show the user:
 Append a step-completion marker comment:
 
 ```bash
-linear issue comment add $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --body "[design-done] Design complete. $(date +%Y-%m-%d)"
+linear issue comment add $ARGUMENTS --body "[design-done] Design complete. $(date +%Y-%m-%d)"
 ```
 
 Keep this comment short. The canonical design lives in the

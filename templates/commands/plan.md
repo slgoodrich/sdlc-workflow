@@ -16,7 +16,7 @@ sections owned by other commands.
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace -->`
+- Issue: !`linear issue view $ARGUMENTS`
 
 ## Standing Instructions
 
@@ -159,7 +159,6 @@ For each sub-item:
 
 ```bash
 linear issue create \
-  --workspace <!-- CUSTOMIZE: workspace --> \
   --parent $ARGUMENTS \
   --title "{action-oriented title}" \
   --label "{Type}" \
@@ -241,7 +240,7 @@ top of the new description.
 **Write the updated description:**
 
 ```bash
-linear issue edit $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --description "{full_content}"
+linear issue edit $ARGUMENTS --description "{full_content}"
 ```
 
 ### Step 7: Summarize and mark complete
@@ -258,7 +257,7 @@ Report to the user:
 Append a step-completion marker comment:
 
 ```bash
-linear issue comment add $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --body "[plan-done] Planning complete. $(date +%Y-%m-%d)"
+linear issue comment add $ARGUMENTS --body "[plan-done] Planning complete. $(date +%Y-%m-%d)"
 ```
 
 Keep this comment short. The canonical plan lives in the description,

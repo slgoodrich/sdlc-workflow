@@ -35,7 +35,7 @@ breakdown for high-complexity work.**
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace -->`
+- Issue: !`linear issue view $ARGUMENTS`
 
 ## Standing Instructions
 
@@ -145,7 +145,6 @@ For each piece:
 
 ```bash
 linear issue create \
-  --workspace <!-- CUSTOMIZE: workspace --> \
   --parent $ARGUMENTS \
   --title "{specific action}" \
   --label "{Type}" \
@@ -271,7 +270,7 @@ Existing sections may include any subset of:
 **Write the updated description:**
 
 ```bash
-linear issue edit $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --description "{full_content}"
+linear issue edit $ARGUMENTS --description "{full_content}"
 ```
 
 ### Step 6: Summarize
@@ -294,7 +293,7 @@ If implementation details were added:
 Append a step-completion marker comment:
 
 ```bash
-linear issue comment add $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --body "[refine-done] Technical spec complete. $(date +%Y-%m-%d)"
+linear issue comment add $ARGUMENTS --body "[refine-done] Technical spec complete. $(date +%Y-%m-%d)"
 ```
 
 Keep this comment short. The canonical spec lives in the
