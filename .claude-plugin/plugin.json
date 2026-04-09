@@ -1,0 +1,9 @@
+{
+  "name": "scaffold",
+  "version": "0.1.0",
+  "description": "SDLC workflow commands and Agent Orchestrator scaffolding for Claude Code",
+  "author": {
+    "name": "slgoodrich"
+  },
+  "license": "MIT"
+}
