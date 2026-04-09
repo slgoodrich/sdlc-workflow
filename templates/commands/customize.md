@@ -583,27 +583,72 @@ Step 11.C.1 above). Nothing to propagate across the command files.
 
 **E. Optional post-merge commands prompt:**
 
-Ask the user whether `review.md` should run any post-merge commands
-(database migrations, deploys, etc.):
+By default, `review.md` has no post-merge step. Most projects don't
+need one (libraries, CLIs, static sites, platform-auto-deployed
+apps). Ask the user, regardless of detected stack:
 
 ```
 AskUserQuestion(
   questions=[{
-    question: "Any post-merge commands to run after auto-merge? (e.g., 'npx supabase db push' for migrations. Leave blank to skip.)",
-    header: "Post-merge"
+    question: "Does this project need post-merge commands to run after auto-merge (e.g., database migrations, deploys, cache warmers)?",
+    header: "Post-merge",
+    options: [
+      { label: "No", description: "No post-merge commands needed" },
+      { label: "Yes", description: "I'll provide the commands" }
+    ],
+    multiSelect: false
   }]
 )
 ```
 
-If the user provides commands, replace the marker in review.md:
+**If the user answers "No"**: do nothing. `review.md` stays as-is
+with no post-merge step. Continue to Step 11.F.
+
+**If the user answers "Yes"**: prompt the user for the actual
+commands as free text:
 
 ```
-Find:    <!-- CUSTOMIZE: project-specific post-merge commands (e.g., supabase db push, deploy migrations) -->
-Replace: {user-provided commands, formatted as a bash block}
+AskUserQuestion(
+  questions=[{
+    question: "Enter the post-merge commands to run after auto-merge. They will be inserted into review.md as a bash block. One command per line.",
+    header: "Commands"
+  }]
+)
 ```
 
-If the user leaves it blank, leave the marker intact. The user can
-populate it later.
+Store the response as `{post_merge_commands}`.
+
+Then insert a new sub-step into `review.md` between sub-step D
+("Return to the default branch and clean up") and the next sub-step
+("Update Linear to Done"). After insertion, the next sub-step's
+letter advances by one (E becomes F).
+
+Read `review.md` to find the exact location. Locate the heading
+literal `**E. Update Linear to Done:**` and replace it with the
+following text (note: outer fence is four backticks because the
+inserted content contains a nested triple-backtick bash block):
+
+````
+**E. Project-specific post-merge commands:**
+
+```bash
+{post_merge_commands}
+```
+
+**F. Update Linear to Done:**
+````
+
+Use an atomic write (write to a temp file then rename) so a partial
+edit can never leave `review.md` corrupt.
+
+**Re-run idempotence**: First-run insertion is the supported flow.
+If the user re-runs `/customize` later and changes their answer, the
+matching logic above (which keys off the literal `**E. Update Linear
+to Done:**` heading) will only succeed if review.md still has its
+default shape. Once a post-merge block exists, the heading is `**F.
+Update Linear to Done:**`, so re-runs will not re-insert or remove
+the block. Document this as a limitation: changing post-merge
+behavior after initial setup requires editing `review.md` manually.
 
 **F. Report:**
 
@@ -615,7 +660,7 @@ Linear CLI skill written:
 - Team: {team}
 - Skill file: skills/linear-cli/SKILL.md
 - Updated {N} command files with workspace value
-- Post-merge commands: {configured | left for later}
+- Post-merge step: {inserted into review.md | not needed for this project}
 ```
 
 ### Step 12: Verify Linear environment

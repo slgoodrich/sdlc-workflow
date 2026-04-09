@@ -40,8 +40,6 @@ Spec sections), but NOT how or why it was built.
 - Auto-merge only on APPROVE verdict AND when a PR exists.
 - Use `gh pr diff` when a PR exists, else `git diff`. The Context
   block PR state tells you which.
-- The post-merge CUSTOMIZE block in Step 9.E runs project-specific
-  commands (migrations, deploys). `/customize` fills this per project.
 - If multiple identifiers provided, process them SEQUENTIALLY.
   Complete all steps for one issue before moving to the next.
 
@@ -549,11 +547,7 @@ git branch -D feat/$ARGUMENTS
 (Use the correct prefix from `/build`'s Type-label mapping if the
 branch was created as `fix/$ARGUMENTS`, `refactor/$ARGUMENTS`, etc.)
 
-**E. Project-specific post-merge commands:**
-
-<!-- CUSTOMIZE: project-specific post-merge commands (e.g., supabase db push, deploy migrations) -->
-
-**F. Update Linear to Done:**
+**E. Update Linear to Done:**
 
 ```bash
 linear issue update $ARGUMENTS --state Done
@@ -595,6 +589,4 @@ linear issue comment add $ARGUMENTS --body "Review passed. PR merged to main."
 - Blast radius from `codebase-memory-mcp.detect_changes` is inlined
   into every agent prompt when available.
 - Auto-merge only fires on APPROVE AND when a PR exists
-- Post-merge commands live in Step 9.E CUSTOMIZE block. `/customize`
-  populates it based on project needs (migrations, deploys, etc.).
 - Extended thinking is enabled via `ultrathink` above.
