@@ -58,7 +58,7 @@ Every issue MUST have exactly one label from each category:
 
 | Category | Options | IDs |
 |---|---|---|
-| Type | Bug, Feature, Improvement, Tech Debt, Testing | See below |
+| Type | Bug, Feature, Improvement | See below |
 | Scope | BE, FE | See below |
 | Complexity | Low, Medium, High | See below |
 | Version | MVP, v2 | See below |
@@ -76,8 +76,6 @@ be both BE and FE, for example.
 | Type | Bug |
 | Type | Feature |
 | Type | Improvement |
-| Type | Tech Debt |
-| Type | Testing |
 
 **Scope**
 

@@ -1,9 +1,9 @@
 ---
 name: test
-description: Write comprehensive tests, run them, and debug failures. Reads the file scope from git diff. Writes a verdict as a [test] comment.
+description: Write tests, run them, debug failures, then commit, push the branch, and open the PR. Writes a verdict as a [test] comment.
 argument-hint: <issue-id>
 disable-model-invocation: true
-allowed-tools: Bash(linear *) Bash(git *) Bash(npm *) Bash(pnpm *) Bash(yarn *) Bash(pytest *) Bash(go *) Bash(cargo *)
+allowed-tools: Bash(linear *) Bash(git *) Bash(gh *) Bash(npm *) Bash(pnpm *) Bash(yarn *) Bash(pytest *) Bash(go *) Bash(cargo *)
 ---
 
 # /test
@@ -13,7 +13,7 @@ specialist agents.
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace -->`
+- Issue: !`linear issue view $ARGUMENTS`
 - Changed files on this branch: !`git diff --name-only $(git merge-base HEAD main 2>/dev/null || echo HEAD~1)`
 - Uncommitted changes: !`git diff --name-only HEAD`
 
@@ -280,22 +280,111 @@ line followed by a blank line:
 Append it to the Linear issue:
 
 ```bash
-linear issue comment add $ARGUMENTS --workspace <!-- CUSTOMIZE: workspace --> --body "{body}"
+linear issue comment add $ARGUMENTS --body "{body}"
 ```
 
 If a prior `[test]` comment exists, leave it in place and append the
 new one. Downstream commands use the most recent `[test]` comment.
 
+### Step 9: Commit, push, and open PR
+
+`/build` commits implementation locally but does not push. `/test` is
+the step that publishes the feature branch to the remote and opens
+the PR (with both implementation and tests together).
+
+**A. Sync with main and commit test files:**
+
+Merge main into the feature branch before committing — same rationale
+as `/build` Step 4. Catches conflicts while the test agent still has
+full context on what was tested.
+
+```bash
+git fetch origin main
+git merge origin/main
+```
+
+**If conflicts**: Resolve them, preserving test correctness. Re-run
+the test suite after resolving to confirm nothing broke.
+
+**If clean merge (or fast-forward)**: Continue.
+
+Then stage and commit the test files:
+
+```bash
+git add -A
+git commit -m "test: add tests for $ARGUMENTS
+
+$ARGUMENTS"
+```
+
+If there are no changes to commit (e.g., `/build` already wrote the
+tests in the same commit), skip the commit and move to 9B.
+
+**B. Push the branch:**
+
+```bash
+git push -u origin $(git branch --show-current)
+```
+
+**C. Open a pull request:**
+
+Check if a PR already exists for this branch:
+
+```bash
+gh pr view --json state 2>/dev/null
+```
+
+**If no PR exists**, create one:
+
+```bash
+gh pr create --title "{type}({scope}): {description}" --body "$(cat <<'EOF'
+## Summary
+- {bullet points from the Technical Spec and what was implemented}
+
+## Test plan
+- {test results summary from Step 8}
+EOF
+)"
+```
+
+The PR title follows conventional commit format. Derive `{type}`
+from the Linear issue's Type label using the same mapping as
+`/build` Step 1 (Feature/Improvement → `feat`, Bug → `fix`, unknown
+→ `feat`). Derive `{scope}` from the primary module touched by the
+implementation.
+
+**Do NOT use `--auto` on `gh pr create`.** Auto-merge is only set by
+`/review` after the review passes. Creating a PR with auto-merge
+bypasses code review.
+
+**If a PR already exists**, just push. The PR updates automatically.
+
+**D. Comment on Linear with the PR link:**
+
+After creating or updating the PR, post a second Linear comment
+(separate from the `[test]` comment in Step 8) with the PR link and
+a one-line test summary:
+
+```bash
+linear issue comment add $ARGUMENTS --body "Tests added. PR: {pr_url}. {passed}/{total} passing. Files tested: {file list}."
+```
+
+The `[test]` comment is the canonical test report consumed by
+`/review`. This comment is a PR-link announcement for quick
+navigation — don't collapse them.
+
 ## Context Flow
 
 ```
-/build commits code changes (no Linear writes during build)
+/build commits code changes locally (no push, no Linear writes)
   -> /test reads git diff (scope = changed source files)
   -> /test reads source files directly
   -> /test reads description for supplementary context (## Plan, ## Technical Spec)
   -> /test spawns test-writer with: source files + acceptance criteria + test strategy
   -> /test writes results as a [test] comment
-  -> /review reads the [test] comment
+  -> /test syncs with main, commits tests, pushes the branch, opens the PR
+  -> /test posts a second Linear comment with the PR link
+  -> /review reads the [test] comment and the PR
 ```
 
 ## Notes

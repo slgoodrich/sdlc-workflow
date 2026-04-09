@@ -431,7 +431,7 @@ values:
 
 Leave these markers UNCHANGED — they belong to Step 11:
 
-- `<!-- CUSTOMIZE: linear team uuid -->`
+- `<!-- CUSTOMIZE: linear team prefix -->`
 - `<!-- CUSTOMIZE: linear workspace slug -->`
 
 Use an atomic write (write to a temp file, then rename) to avoid
@@ -475,14 +475,15 @@ AskUserQuestion(
       header: "Workspace"
     },
     {
-      question: "What's your Linear team key or UUID? (e.g., 'ENG' for team prefix ENG-, or the team's UUID)",
+      question: "What's your Linear team prefix? (3-letter uppercase code, e.g., 'APP', 'ENG', 'LAN')",
       header: "Team"
     }
   ]
 )
 ```
 
-Store as `{workspace}` and `{team}`.
+Store as `{workspace}` and `{team}`. The team value must be the
+3-letter prefix, not a UUID.
 
 **B. Write skills/linear-cli/SKILL.md:**
 
@@ -498,19 +499,21 @@ allowed-tools: Bash(linear *), Bash(curl *)
 
 # Linear CLI — {workspace} Workspace
 
-**CRITICAL: This project requires specific flags on EVERY linear command:**
+**Configured via `.linear.toml` at project root**, so `--workspace`
+and `--team` flags are read automatically and never need to be passed
+on the command line.
 
-- **Workspace**: `--workspace {workspace}` (ALWAYS required)
-- **Team**: `{team}`
+- **Workspace**: `{workspace}` (from `.linear.toml`)
+- **Team**: `{team}` (from `.linear.toml`)
 - **Issue format**: `{team}-XX` (e.g., {team}-94, not just 94)
 
 ## Command Template
 
 \`\`\`bash
-linear issue view {team}-94 --workspace {workspace}
-linear issue create --title "Title" --workspace {workspace} --label "Feature" --label "Medium" --label "MVP"
-linear issue update {team}-94 --workspace {workspace} --state "In Progress"
-linear issue comment add {team}-94 --workspace {workspace} --body "Comment text"
+linear issue view {team}-94
+linear issue create --title "Title" --label "Feature" --label "Medium" --label "MVP"
+linear issue update {team}-94 --state "In Progress"
+linear issue comment add {team}-94 --body "Comment text"
 \`\`\`
 
 ## Valid States
@@ -524,10 +527,10 @@ linear issue comment add {team}-94 --workspace {workspace} --body "Comment text"
 
 ## Common Mistakes to Avoid
 
-1. Missing `--workspace {workspace}` flag
-2. Missing prefix `{team}-`
-3. Using just the issue number (94) instead of full identifier ({team}-94)
-4. Quoting state names: use `--state Done` not `--state "Done"`
+1. Missing prefix `{team}-` (use `{team}-94`, not just `94`)
+2. Quoting state names: use `--state Done` not `--state "Done"`
+3. Passing `--workspace` on the command line when `.linear.toml`
+   is present — it's redundant and confusing
 ```
 
 If the file already exists with identical workspace/team values, do
@@ -540,35 +543,28 @@ Read the current yaml. Replace:
 | Marker | Replacement |
 |---|---|
 | `<!-- CUSTOMIZE: linear workspace slug -->` | `{workspace}` |
-| `<!-- CUSTOMIZE: linear team uuid -->` | `{team}` |
+| `<!-- CUSTOMIZE: linear team prefix -->` | `{team}` |
 
 Use an atomic write (temp file + rename).
 
-**D. Propagate workspace to all command files:**
+**C.1. Populate .linear.toml at the project root:**
 
-The inline `<!-- CUSTOMIZE: workspace -->` marker appears in many
-places across the command files. For each of these files, do a
-global find-and-replace:
+If `.linear.toml` exists at the project root, read its current
+content. Replace:
 
-```
-Find:    <!-- CUSTOMIZE: workspace -->
-Replace: {workspace}
-```
+| Marker | Replacement |
+|---|---|
+| `<!-- CUSTOMIZE: workspace -->` | `{workspace}` |
+| `<!-- CUSTOMIZE: team-prefix -->` | `{team}` |
 
-Files to update:
+Use an atomic write.
 
-- `.claude/commands/plan.md`
-- `.claude/commands/design.md`
-- `.claude/commands/refine.md`
-- `.claude/commands/build.md`
-- `.claude/commands/test.md`
-- `.claude/commands/review.md`
-- `.claude/commands/audit.md`
-- `.ao/worker-rules.md`
+Once `.linear.toml` is populated, the `linear` CLI reads `workspace`
+and `team_id` from it automatically — no `--workspace` flag needed on
+subsequent calls. The flags in the command templates remain redundant
+but harmless.
 
-Use an atomic write (temp file + rename) for each file.
-
-**D.1. Substitute team prefix in issue-breakdown.md:**
+**D. Substitute team prefix in issue-breakdown.md:**
 
 Read `.claude/rules/issue-breakdown.md`. Replace every instance of:
 
@@ -577,32 +573,82 @@ Find:    <!-- CUSTOMIZE: team-prefix -->
 Replace: {team}
 ```
 
-This populates the example issue IDs (e.g., `LAN-1234`, `ENG-42`)
+This populates the example issue IDs (e.g., `APP-1234`, `ENG-42`)
 with the actual Linear team prefix. Use an atomic write.
+
+Note: The command templates themselves no longer contain
+`<!-- CUSTOMIZE: workspace -->` markers. The linear CLI reads the
+workspace from `.linear.toml` at the project root (populated in
+Step 11.C.1 above). Nothing to propagate across the command files.
 
 **E. Optional post-merge commands prompt:**
 
-Ask the user whether `review.md` should run any post-merge commands
-(database migrations, deploys, etc.):
+By default, `review.md` has no post-merge step. Most projects don't
+need one (libraries, CLIs, static sites, platform-auto-deployed
+apps). Ask the user, regardless of detected stack:
 
 ```
 AskUserQuestion(
   questions=[{
-    question: "Any post-merge commands to run after auto-merge? (e.g., 'npx supabase db push' for migrations. Leave blank to skip.)",
-    header: "Post-merge"
+    question: "Does this project need post-merge commands to run after auto-merge (e.g., database migrations, deploys, cache warmers)?",
+    header: "Post-merge",
+    options: [
+      { label: "No", description: "No post-merge commands needed" },
+      { label: "Yes", description: "I'll provide the commands" }
+    ],
+    multiSelect: false
   }]
 )
 ```
 
-If the user provides commands, replace the marker in review.md:
+**If the user answers "No"**: do nothing. `review.md` stays as-is
+with no post-merge step. Continue to Step 11.F.
+
+**If the user answers "Yes"**: prompt the user for the actual
+commands as free text:
 
 ```
-Find:    <!-- CUSTOMIZE: project-specific post-merge commands (e.g., supabase db push, deploy migrations) -->
-Replace: {user-provided commands, formatted as a bash block}
+AskUserQuestion(
+  questions=[{
+    question: "Enter the post-merge commands to run after auto-merge. They will be inserted into review.md as a bash block. One command per line.",
+    header: "Commands"
+  }]
+)
 ```
 
-If the user leaves it blank, leave the marker intact. The user can
-populate it later.
+Store the response as `{post_merge_commands}`.
+
+Then insert a new sub-step into `review.md` between sub-step D
+("Return to the default branch and clean up") and the next sub-step
+("Update Linear to Done"). After insertion, the next sub-step's
+letter advances by one (E becomes F).
+
+Read `review.md` to find the exact location. Locate the heading
+literal `**E. Update Linear to Done:**` and replace it with the
+following text (note: outer fence is four backticks because the
+inserted content contains a nested triple-backtick bash block):
+
+````
+**E. Project-specific post-merge commands:**
+
+```bash
+{post_merge_commands}
+```
+
+**F. Update Linear to Done:**
+````
+
+Use an atomic write (write to a temp file then rename) so a partial
+edit can never leave `review.md` corrupt.
+
+**Re-run idempotence**: First-run insertion is the supported flow.
+If the user re-runs `/customize` later and changes their answer, the
+matching logic above (which keys off the literal `**E. Update Linear
+to Done:**` heading) will only succeed if review.md still has its
+default shape. Once a post-merge block exists, the heading is `**F.
+Update Linear to Done:**`, so re-runs will not re-insert or remove
+the block. Document this as a limitation: changing post-merge
+behavior after initial setup requires editing `review.md` manually.
 
 **F. Report:**
 
@@ -614,7 +660,7 @@ Linear CLI skill written:
 - Team: {team}
 - Skill file: skills/linear-cli/SKILL.md
 - Updated {N} command files with workspace value
-- Post-merge commands: {configured | left for later}
+- Post-merge step: {inserted into review.md | not needed for this project}
 ```
 
 ### Step 12: Verify Linear environment
@@ -687,7 +733,177 @@ above issues are resolved. Fix them and re-run /customize (or run
 individual linear CLI commands manually).
 ```
 
-### Step 13: Summarize
+### Step 13: Populate review.md and self-running-architecture.md
+
+Two template files contain CUSTOMIZE markers that need project-
+specific content generated from exploring the codebase:
+
+- `.claude/commands/review.md` — security trigger paths, security
+  check categories, performance trigger paths, performance check
+  categories
+- `.claude/rules/self-running-architecture.md` — core loop diagram,
+  component table, runtime dependencies, risks, metrics, alerting
+  conditions (26 markers total)
+
+Spawn an exploration agent to read the project and draft content for
+both files in one pass.
+
+**A. Explore project structure:**
+
+Read the following to understand the project:
+
+- `CLAUDE.md` at project root (if it exists) — especially the Stack
+  section populated in Step 4
+- Package manifest (`package.json`, `pyproject.toml`, `go.mod`, etc.)
+- Top-level directories to identify components (e.g., `src/`, `lib/`,
+  `cmd/`, `pkg/`)
+- Key entry-point files (e.g., `main.*`, `index.*`, CLI entry points)
+- `.env.example` or similar (if present) to understand external
+  dependencies
+
+Store findings as `{project_context}`.
+
+**B. Dispatch exploration agent:**
+
+```
+Task(
+  subagent_type="Explore",
+  prompt="# Architectural and Security/Performance Template Population
+
+Read the project structure and generate content for two template files.
+
+## Project Context
+{project_context from Step 13.A}
+
+## Task 1: review.md CUSTOMIZE markers
+
+Generate four pieces of content for .claude/commands/review.md:
+
+### 1.1 Security trigger paths (table rows)
+List file path patterns that should trigger the security auditor agent.
+Look for: config loaders, auth flows, input parsing (HTTP routes,
+webhook handlers, file uploads), DB query construction, secret-handling
+files, dependency manifests, anything at a trust boundary.
+
+Output format: markdown table rows with the | Trigger paths | Rationale | columns.
+
+### 1.2 Security check categories (prompt additions)
+List security concerns specific to this project. For each, include
+example checks. Examples: SQL injection in the DB layer, YAML loading
+safety if config is YAML, scraper response validation if the project
+scrapes external sites, framework-specific auth quirks.
+
+Output format: numbered subsections with ### headings, matching the
+existing security prompt style in review.md.
+
+### 1.3 Performance trigger paths (table rows)
+List file path patterns for hot paths that should trigger the
+performance reviewer. Look for: data pipelines, batch jobs, query
+layers, request handlers on high-traffic routes, scraping loops,
+anything in a tight iteration.
+
+Output format: markdown table rows with the | Trigger paths | Rationale | columns.
+
+### 1.4 Performance check categories (prompt additions)
+List performance concerns specific to this project. Examples: N+1
+queries in the ORM, scraper politeness delays, batch transaction
+patterns, memory pressure from unbounded results.
+
+Output format: numbered subsections matching the performance prompt style.
+
+## Task 2: self-running-architecture.md CUSTOMIZE markers
+
+Generate content for all 26 markers in
+.claude/rules/self-running-architecture.md. The markers cover:
+
+- Core loop diagram (the project's data/control flow)
+- Critical architecture decision (batch vs runtime dependencies)
+- Worst case scenario (what if primary source goes down)
+- Component-by-component automation table rows
+- Weekly / Monthly / Quarterly / Unpredictable human attention tasks
+- Managed infrastructure list
+- Pipeline observability metrics
+- Alerting conditions (critical / warning / informational)
+- Risks ('What Could Kill the Dream')
+- Checklist items
+
+For each marker, generate project-specific content that accurately
+reflects this project's architecture. If the information isn't
+determinable from the files, output a placeholder string like
+'<!-- TBD: describe this for your project -->' so the user knows to
+fill it in manually.
+
+## Output Format
+
+Return a structured response with two top-level sections:
+
+=== review.md ===
+
+### Security trigger paths
+{markdown table rows}
+
+### Security check categories
+{numbered ### subsections}
+
+### Performance trigger paths
+{markdown table rows}
+
+### Performance check categories
+{numbered ### subsections}
+
+=== self-running-architecture.md ===
+
+For each of the 26 markers, output the marker name and the generated
+content in a key: value format so the caller can substitute.
+
+Do NOT implement anything. Return text only."
+)
+```
+
+**C. Apply generated content to review.md:**
+
+Take the four pieces from Task 1 and substitute them into
+`.claude/commands/review.md`:
+
+| Marker | Replace with |
+|---|---|
+| `<!-- CUSTOMIZE: Populate with project-specific security and performance trigger paths -->` | Trigger paths table rows (1.1 + 1.3) |
+| `<!-- CUSTOMIZE: Add project-specific security check categories here ... -->` | Security check categories (1.2) |
+| `<!-- CUSTOMIZE: Add project-specific performance check categories here ... -->` | Performance check categories (1.4) |
+
+The trigger paths table marker sits above the existing dispatch
+table in Step 3.C of review.md. Replace the marker comment with the
+combined security (1.1) and performance (1.3) trigger path rows from
+the agent, appending them to the existing Security auditor and
+Performance reviewer rows so the project-specific paths augment the
+generic rules.
+
+Use an atomic write.
+
+**D. Apply generated content to self-running-architecture.md:**
+
+Take the 26 marker→content pairs from Task 2 and substitute each
+marker in `.claude/rules/self-running-architecture.md` with its
+generated content. If the agent output a `<!-- TBD: ... -->`
+placeholder, leave the marker as-is (user fills in manually later).
+
+Use an atomic write.
+
+**E. Report:**
+
+Tell the user:
+
+```
+Populated architectural templates:
+- .claude/commands/review.md: {N} markers filled, {M} skipped
+- .claude/rules/self-running-architecture.md: {N} markers filled, {M} skipped
+
+Skipped markers are left as-is for manual fill. Review the populated
+content before committing — the exploration agent makes best-effort
+inferences from project structure.
+```
+
+### Step 14: Summarize
 
 Report to the user in this structure:
 
@@ -701,17 +917,19 @@ Report to the user in this structure:
 
 - `.claude/commands/refine.md` — agent routing table
 - `.claude/commands/build.md` — agent selection table
+- `.claude/commands/review.md` — security/performance trigger paths and check categories
 - `.claude/rules/context7-lookup.md` — library IDs and query guidance
 - `.claude/rules/tests.md` — test framework and project-specific targets
 - `.claude/rules/quality-bar.md` — project-specific sections
 - `.claude/rules/error_handling.md` — code examples
 - `.claude/rules/git-workflow.md` — pre-commit hooks for the detected stack
 - `.claude/rules/issue-breakdown.md` — Linear team prefix
-- `.claude/rules/self-running-architecture.md` — **not auto-populated** (manual fill during /plan or /design)
+- `.claude/rules/self-running-architecture.md` — core loop, components, risks, metrics, alerts (best-effort inference; review before committing)
 - `.claude/settings.json` — enabled plugins
 - `CLAUDE.md` — stack and agent info
 - `.ao/worker-rules.md` — agent routing table and test command
 - `agent-orchestrator.yaml` — project metadata + Linear team/workspace
+- `.linear.toml` — Linear CLI workspace + team config
 - `skills/linear-cli/SKILL.md` — Linear CLI configuration
 
 **Linear environment**: {status from Step 12}
@@ -731,8 +949,8 @@ Report to the user in this structure:
    The dashboard runs at http://localhost:3000.
 
 3. Try the full workflow on a test issue:
-   - Create a Linear issue:
-     `linear issue create --title "test" --workspace <workspace>`
+   - Create a Linear issue: `linear issue create --title "test"`
+     (workspace and team come from `.linear.toml`)
    - Run `/plan <ISSUE-ID>` to refine requirements
    - Run `/design`, `/refine` as needed
    - Move the issue to "Ready to Build" in Linear

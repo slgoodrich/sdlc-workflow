@@ -10,7 +10,7 @@ description and its comments.
 The initial prompt gives you the issue title, description, labels, and
 priority. It does NOT include comments. Fetch them:
 
-    linear issue view <ISSUE-ID> --comments --workspace <!-- CUSTOMIZE: workspace -->
+    linear issue view <ISSUE-ID> --comments
 
 Look for comments tagged with `[plan]`, `[design]`, and `[refine]`. Read
 all of them in order. If the issue is missing `[refine]`, stop and report
