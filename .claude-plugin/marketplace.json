@@ -4,7 +4,7 @@
     "name": "slgoodrich"
   },
   "metadata": {
-    "description": "SDLC workflow commands and Agent Orchestrator scaffolding for Claude Code",
+    "description": "SDLC workflow commands for Claude Code",
     "homepage": "https://github.com/slgoodrich/scaffold"
   },
   "plugins": [

@@ -124,7 +124,7 @@ form: `{prefix}{ISSUE-ID}`. If the prefix doesn't match the derived
 git branch -m "{branch_prefix}$ARGUMENTS"
 ```
 
-Example: AO created the branch as `feat/LAN-42`, but the Linear
+Example: the branch was created as `feat/LAN-42`, but the Linear
 issue is tagged `Type | Bug`. Rename to `fix/LAN-42` before any
 commits.
 

@@ -3,7 +3,7 @@
  * Scaffold plugin setup script.
  *
  * Invoked manually via the /scaffold command. Copies bundled templates
- * into the project's .claude/, .ao/, and project root directories.
+ * into the project's .claude/ and project root directories.
  * Idempotent — never overwrites existing files. Safe to re-run.
  *
  * Reads CLAUDE_PROJECT_DIR from the environment, or falls back to
@@ -33,7 +33,6 @@ try {
     { src: join(ROOT, 'templates', 'commands'), dest: join(projectDir, '.claude', 'commands') },
     { src: join(ROOT, 'templates', 'rules'),    dest: join(projectDir, '.claude', 'rules') },
     { src: join(ROOT, 'templates', 'claude'),   dest: join(projectDir, '.claude') },
-    { src: join(ROOT, 'templates', 'ao'),       dest: join(projectDir, '.ao') },
     { src: join(ROOT, 'templates', 'root'),     dest: projectDir },
   ];
 

@@ -1,6 +1,6 @@
 ---
 name: customize
-description: Bootstrap a project for the scaffold workflow. Detects stack, enables agents, populates rules, AO config, and Linear CLI skill. Run once per project.
+description: Bootstrap a project for the scaffold workflow. Detects stack, enables agents, populates rules, and Linear CLI skill. Run once per project.
 disable-model-invocation: true
 allowed-tools: Bash(git *) Bash(linear *) Bash(node *) Bash(basename *) Bash(pwd *)
 ---
@@ -8,8 +8,7 @@ allowed-tools: Bash(git *) Bash(linear *) Bash(node *) Bash(basename *) Bash(pwd
 # /customize
 
 Configure workflow commands and rules for a specific project's stack
-and agents. Bootstraps Agent Orchestrator config and Linear CLI skill
-if applicable.
+and agents. Bootstraps Linear CLI skill if applicable.
 
 ## Arguments
 
@@ -29,18 +28,14 @@ None. Stack is detected from the codebase or prompted interactively.
 - Idempotent — safe to re-run. Already-populated files are not
   re-prompted for.
 - Keep CUSTOMIZE markers separate:
-  - Routing table markers in `refine.md`, `build.md`, and
-    `worker-rules.md` use detected stack data
-  - Workspace markers in command files and the AO yaml use Linear
-    prompt data
+  - Routing table markers in `refine.md` and `build.md` use detected
+    stack data
+  - Workspace markers in command files use Linear prompt data
   - Don't cross-populate these categories
 - Non-blocking on Linear environment — plugin install succeeds even
   when Linear CLI or API key are missing. Report warnings, don't fail.
 - Use atomic writes for all file modifications (write to temp, then
   rename) to avoid corruption on partial failure.
-- If `agent-orchestrator.yaml` or `.ao/worker-rules.md` does not
-  exist, skip the AO-specific steps — the project does not use AO.
-
 ## Execution
 
 ### Step 1: Detect stack
@@ -184,28 +179,6 @@ Only include agents that are enabled. Do not include
 
 **In `commands/build.md`**, replace the same pattern under
 `### Step 2: Select agent`.
-
-**C. Update agent routing in `.ao/worker-rules.md`:**
-
-Write the same routing table to `.ao/worker-rules.md`, replacing the
-`<!-- CUSTOMIZE: Replace with stack-specific agent routing table -->`
-marker and the empty table below it. Use the same detected stack and
-enabled agents as sub-section B.
-
-Also replace the `<!-- CUSTOMIZE: project-specific test command -->`
-marker in worker-rules.md's Step 4 with the detected test runner
-command:
-
-| Test runner | Command |
-|---|---|
-| vitest | `npm test` (or `pnpm test`) |
-| jest | `npm test` |
-| pytest | `pytest` |
-| go test | `go test ./...` |
-| cargo test | `cargo test` |
-
-Only populate this if `.ao/worker-rules.md` exists. Skip if the file
-is missing (project does not use Agent Orchestrator).
 
 ### Step 4: Update CLAUDE.md
 
@@ -380,102 +353,17 @@ Key replacements:
 Preserve the prose and principles. Only change code blocks and
 language-specific references.
 
-### Step 10: Populate agent-orchestrator.yaml metadata
-
-If `agent-orchestrator.yaml` does not exist at the project root, skip
-this step (the scaffold plugin did not install it, or the project
-does not use Agent Orchestrator).
-
-If it exists AND contains `<!-- CUSTOMIZE` markers for project
-metadata, populate them with detected values. If it exists without
-those markers, the yaml was already customized — skip to Step 11.
-
-**A. Read metadata from the Context block:**
-
-The Context block at the top of this command pre-fetched:
-
-- `Project path` — from `pwd`
-- `Git remote` — from `git remote get-url origin`
-- `Default branch` — from `git symbolic-ref refs/remotes/origin/HEAD`
-- `Directory basename` — from `basename "$(pwd)"`
-
-Parse the git remote to extract `owner/name`:
-
-- HTTPS: `https://github.com/<owner>/<name>.git` → strip prefix and
-  `.git` suffix
-- SSH: `git@github.com:<owner>/<name>.git` → strip prefix and `.git`
-  suffix
-
-If the Context block shows `no-remote`, prompt the user:
-
-```
-AskUserQuestion(
-  questions=[{
-    question: "No git remote found. What's the repo in 'owner/name' format?",
-    header: "Repo"
-  }]
-)
-```
-
-**B. Derive project-id and sessionPrefix:**
-
-- **project-id**: kebab-case of the directory basename. Lowercase,
-  spaces replaced with hyphens, non-alphanumeric characters stripped.
-  Examples: `Landfall HQ` → `landfall-hq`, `scaffold` → `scaffold`.
-- **sessionPrefix**: short identifier (3-4 chars).
-  - Multi-word names: use initials. `Landfall HQ` → `lhq`.
-  - Single-word names: use first 3-4 characters. `scaffold` → `sca`.
-  - If ambiguous, prompt the user.
-
-**C. Write to agent-orchestrator.yaml:**
-
-Read the current yaml content. Replace these markers with detected
-values:
-
-| Marker | Replacement |
-|---|---|
-| `<!-- CUSTOMIZE: project-id -->` | derived project-id |
-| `<!-- CUSTOMIZE: display name -->` | directory basename |
-| `<!-- CUSTOMIZE: owner/repo -->` | parsed from git remote |
-| `<!-- CUSTOMIZE: absolute path -->` | project path from Context |
-| `<!-- CUSTOMIZE: main -->` | detected default branch from Context |
-| `<!-- CUSTOMIZE: short-prefix -->` | derived sessionPrefix |
-
-Leave these markers UNCHANGED — they belong to Step 11:
-
-- `<!-- CUSTOMIZE: linear team prefix -->`
-- `<!-- CUSTOMIZE: linear workspace slug -->`
-
-Use an atomic write (write to a temp file, then rename) to avoid
-corrupting the yaml on partial failure.
-
-**D. Report:**
-
-Tell the user what was written:
-
-```
-Populated agent-orchestrator.yaml:
-- project-id: {project-id}
-- name: {display name}
-- repo: {owner/repo}
-- path: {absolute path}
-- defaultBranch: {branch}
-- sessionPrefix: {prefix}
-
-Linear team and workspace will be prompted in the next step.
-```
-
-### Step 11: Set up Linear CLI skill
+### Step 10: Set up Linear CLI skill
 
 This step folds in the functionality of the former `/linear-setup`
-command. It configures the Linear CLI skill, populates Linear values
-in the AO yaml, and propagates the workspace to all command files.
+command. It configures the Linear CLI skill and propagates the
+workspace to all command files.
 
 **A. Prompt for Linear workspace and team:**
 
-Idempotency check first: if `agent-orchestrator.yaml` no longer
-contains `<!-- CUSTOMIZE: linear workspace slug -->` (because this is
-a re-run and Linear was already configured), skip directly to Step 12.
+Idempotency check first: if `.linear.toml` no longer contains
+`<!-- CUSTOMIZE: workspace -->` (because this is a re-run and Linear
+was already configured), skip directly to Step 11.
 
 Otherwise prompt:
 
@@ -548,18 +436,7 @@ linear issue comment add {team}-94 --body "Comment text"
 If the file already exists with identical workspace/team values, do
 not rewrite it. If values differ, overwrite.
 
-**C. Populate Linear markers in agent-orchestrator.yaml:**
-
-Read the current yaml. Replace:
-
-| Marker | Replacement |
-|---|---|
-| `<!-- CUSTOMIZE: linear workspace slug -->` | `{workspace}` |
-| `<!-- CUSTOMIZE: linear team prefix -->` | `{team}` |
-
-Use an atomic write (temp file + rename).
-
-**C.1. Populate .linear.toml at the project root:**
+**C. Populate .linear.toml at the project root:**
 
 If `.linear.toml` exists at the project root, read its current
 content. Replace:
@@ -591,7 +468,7 @@ with the actual Linear team prefix. Use an atomic write.
 Note: The command templates themselves no longer contain
 `<!-- CUSTOMIZE: workspace -->` markers. The linear CLI reads the
 workspace from `.linear.toml` at the project root (populated in
-Step 11.C.1 above). Nothing to propagate across the command files.
+Step 10.C above). Nothing to propagate across the command files.
 
 **E. Optional post-merge commands prompt:**
 
@@ -614,7 +491,7 @@ AskUserQuestion(
 ```
 
 **If the user answers "No"**: do nothing. `review.md` stays as-is
-with no post-merge step. Continue to Step 11.F.
+with no post-merge step. Continue to Step 10.F.
 
 **If the user answers "Yes"**: prompt the user for the actual
 commands as free text:
@@ -675,7 +552,7 @@ Linear CLI skill written:
 - Post-merge step: {inserted into review.md | not needed for this project}
 ```
 
-### Step 12: Verify Linear environment
+### Step 11: Verify Linear environment
 
 Non-blocking checks that report missing prerequisites but do not
 fail the command. The scaffold plugin should install successfully
@@ -745,7 +622,7 @@ above issues are resolved. Fix them and re-run /customize (or run
 individual linear CLI commands manually).
 ```
 
-### Step 13: Populate review.md and self-running-architecture.md
+### Step 12: Populate review.md and self-running-architecture.md
 
 Two template files contain CUSTOMIZE markers that need project-
 specific content generated from exploring the codebase:
@@ -785,7 +662,7 @@ Task(
 Read the project structure and generate content for two template files.
 
 ## Project Context
-{project_context from Step 13.A}
+{project_context from Step 12.A}
 
 ## Task 1: review.md CUSTOMIZE markers
 
@@ -915,7 +792,7 @@ content before committing — the exploration agent makes best-effort
 inferences from project structure.
 ```
 
-### Step 14: Summarize
+### Step 13: Summarize
 
 Report to the user in this structure:
 
@@ -939,12 +816,10 @@ Report to the user in this structure:
 - `.claude/rules/self-running-architecture.md` — core loop, components, risks, metrics, alerts (best-effort inference; review before committing)
 - `.claude/settings.json` — enabled plugins
 - `CLAUDE.md` — stack and agent info
-- `.ao/worker-rules.md` — agent routing table and test command
-- `agent-orchestrator.yaml` — project metadata + Linear team/workspace
 - `.linear.toml` — Linear CLI workspace + team config
 - `skills/linear-cli/SKILL.md` — Linear CLI configuration
 
-**Linear environment**: {status from Step 12}
+**Linear environment**: {status from Step 11}
 
 **Next steps**:
 
@@ -952,22 +827,12 @@ Report to the user in this structure:
    - Install `linear` CLI: `npm install -g @linear/cli`
    - Set `LINEAR_API_KEY` in your environment or `.env`
 
-2. Launch the Agent Orchestrator dashboard:
-
-   ```bash
-   ao start
-   ```
-
-   The dashboard runs at http://localhost:3000.
-
-3. Try the full workflow on a test issue:
+2. Try the full workflow on a test issue:
    - Create a Linear issue: `linear issue create --title "test"`
      (workspace and team come from `.linear.toml`)
    - Run `/plan <ISSUE-ID>` to refine requirements
    - Run `/design`, `/refine` as needed
-   - Move the issue to "Ready to Build" in Linear
-   - AO will spawn a worker that runs `/build`, `/test`, `/review`
-     and auto-merges on approval
+   - Run `/build`, `/test`, `/review` to implement and merge
 
 **If anything looks wrong**: re-run `/customize` to refresh detection
 and re-populate files. The command is idempotent.

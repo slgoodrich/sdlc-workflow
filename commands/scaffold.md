@@ -19,9 +19,7 @@ project:
 - `.claude/rules/` — 7 rules files (quality-bar, tests,
   error_handling, context7-lookup, git-workflow, issue-breakdown,
   self-running-architecture)
-- `.ao/` — worker-rules.md for Agent Orchestrator
-- Project root — `agent-orchestrator.yaml`, `CLAUDE.md`, and
-  `.linear.toml` scaffolds
+- Project root — `CLAUDE.md` and `.linear.toml` scaffolds
 
 The copy is **idempotent**. Existing files are never overwritten.
 Re-running `/scaffold` is safe and will only copy files that are
@@ -58,12 +56,9 @@ Report to the user:
 After templates are copied, tell the user:
 
 1. **Review the copied files** to confirm they match expectations.
-   Look in `.claude/commands/`, `.claude/rules/`, `.ao/`, and the
-   project root.
+   Look in `.claude/commands/`, `.claude/rules/`, and the project root.
 2. **Run `/customize`** to populate stack-specific CUSTOMIZE markers
-   (routing tables, AO config, Linear CLI skill, pre-commit hooks).
-3. **Run `ao start`** to launch the Agent Orchestrator dashboard if
-   you want autonomous build/test/review.
+   (routing tables, Linear CLI skill, pre-commit hooks).
 
 ## Notes
 

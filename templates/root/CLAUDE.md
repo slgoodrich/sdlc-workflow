@@ -18,8 +18,7 @@
 
 ## Workflow
 
-This project uses the `scaffold` plugin for SDLC workflow and Agent
-Orchestrator for autonomous build/test/review.
+This project uses the `scaffold` plugin for SDLC workflow.
 
 **Manual phases** (run in a regular Claude Code session):
 
@@ -27,8 +26,7 @@ Orchestrator for autonomous build/test/review.
 - `/design <LAN-ID>` — UX specification
 - `/refine <LAN-ID>` — technical spec
 
-**Autonomous phases** (AO runs these when you label an issue
-"Ready to Build"):
+**Build phases**:
 
 - `/build` — implement
 - `/test` — write and run tests
@@ -38,12 +36,3 @@ Orchestrator for autonomous build/test/review.
 
 - `/audit [scope]` — codebase audit (creates Linear issues for findings)
 - `/customize` — re-run if stack changes
-
-## Agent Orchestrator
-
-`agent-orchestrator.yaml` at the project root contains the AO config.
-Launch with:
-
-    ao start
-
-The orchestrator dashboard runs at http://localhost:3000.

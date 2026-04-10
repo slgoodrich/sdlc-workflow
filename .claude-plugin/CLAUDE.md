@@ -1,8 +1,7 @@
 # Scaffold
 
-You have a scaffold system that provides SDLC workflow commands and
-bootstraps new projects for the Agent Orchestrator autonomous worker
-pipeline.
+You have a scaffold system that provides SDLC workflow commands for
+Claude Code projects.
 
 ## How It Works
 
@@ -15,14 +14,13 @@ project:
   test, review, audit, customize)
 - `.claude/rules/` — code quality, testing, git workflow, issue
   breakdown, and architecture rules
-- `.ao/` — Agent Orchestrator worker rules
-- Project root — `agent-orchestrator.yaml` and `CLAUDE.md` scaffolds
+- Project root — `CLAUDE.md` and `.linear.toml` scaffolds
 
 The copy is idempotent. Existing files are never overwritten. Users
 can run `/scaffold` multiple times safely.
 
 After `/scaffold`, users run `/customize` to populate stack-specific
-bits (routing tables, AO config, Linear CLI skill, pre-commit hooks).
+bits (routing tables, Linear CLI skill, pre-commit hooks).
 
 ## The Workflow
 
@@ -39,8 +37,7 @@ comments tagged `[plan]`, `[design]`, `[refine]`, `[build]`, `[test]`,
 3. `/refine <issue>` — Technical spec and task breakdown. Writes as
    `[refine]` comment.
 
-**Autonomous phases** (run by Agent Orchestrator workers on issues
-labeled "Ready to Build"):
+**Build phases**:
 
 4. `/build <issue>` — Implement. Writes progress as `[build]` comments.
 5. `/test <issue>` — Write and run tests. Writes as `[test]` comment.
@@ -51,28 +48,15 @@ labeled "Ready to Build"):
 
 - `/audit [scope]` — Read-only codebase audit. Findings become Linear
   issues.
-- `/customize` — Detect project stack, populate routing tables, bootstrap
-  AO config, set up Linear CLI skill.
-
-## Agent Orchestrator Handoff
-
-For autonomous build/test/review of Linear issues:
-
-1. Run `/customize` once to populate `agent-orchestrator.yaml` with the
-   project's repo, Linear team, and stack-specific agent routing.
-2. Run `ao start` to launch the orchestrator dashboard.
-3. Move a Linear issue to "Ready to Build" — AO spawns a worker in an
-   isolated git worktree.
-4. The worker reads the Linear issue, implements, opens a PR. AO handles
-   CI failures and review comments by routing them back to the worker
-   automatically.
+- `/customize` — Detect project stack, populate routing tables, set up
+  Linear CLI skill.
 
 ## Behavior Guidelines
 
 - The phase commands read each other's output via Linear comment tags.
   Preserve the tagging convention exactly.
-- Never move a Linear issue to "Ready to Build" from within a phase
-  command. That is a human signal indicating upstream work is complete.
+- Never move a Linear issue status from within a phase command unless
+  the command explicitly instructs it.
 - Use `claude-mem` and `codebase-memory-mcp` MCP tools for context lookup
   when available. Do not use them as durable state stores — Linear owns
   all cross-phase state.
@@ -89,4 +73,4 @@ For autonomous build/test/review of Linear issues:
 | `/test <issue>` | Test writing + running | `[test]` comment |
 | `/review <issue>` | Code review + merge | `[review]` comment |
 | `/audit [scope]` | Codebase audit | New Linear issues per finding |
-| `/customize` | Project bootstrap | `.claude/`, `.ao/`, root files |
+| `/customize` | Project bootstrap | `.claude/`, root files |
