@@ -1,9 +1,0 @@
-{
-  "name": "scaffold",
-  "version": "0.2.0",
-  "description": "SDLC workflow commands for Claude Code",
-  "author": {
-    "name": "slgoodrich"
-  },
-  "license": "MIT"
-}

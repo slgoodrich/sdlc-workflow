@@ -1,0 +1,11 @@
+{
+  "name": "sdlc-local",
+  "version": "0.1.0",
+  "description": "SDLC workflow backed by local markdown files",
+  "author": "slgoodrich",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,16 +1,39 @@
 {
-  "name": "scaffold",
+  "name": "sdlc-workflow",
   "owner": {
-    "name": "slgoodrich"
+    "name": "Steve Goodrich",
+    "url": "https://github.com/slgoodrich"
   },
   "metadata": {
-    "description": "SDLC workflow commands for Claude Code",
-    "homepage": "https://github.com/slgoodrich/scaffold"
+    "description": "Prescriptive SDLC workflow commands for Claude Code. Choose Linear-backed or local file-backed.",
+    "version": "0.1.0"
   },
   "plugins": [
     {
-      "name": "scaffold",
-      "source": "./"
+      "name": "sdlc-linear",
+      "source": "./linear",
+      "description": "SDLC workflow backed by Linear issue tracking. Cross-phase state lives in Linear issue descriptions and comments.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Steve Goodrich",
+        "url": "https://github.com/slgoodrich"
+      },
+      "homepage": "https://github.com/slgoodrich/sdlc-workflow",
+      "license": "MIT",
+      "category": "workflow"
+    },
+    {
+      "name": "sdlc-local",
+      "source": "./local",
+      "description": "SDLC workflow backed by local markdown files. Cross-phase state lives in .workflow/streams/ directories.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Steve Goodrich",
+        "url": "https://github.com/slgoodrich"
+      },
+      "homepage": "https://github.com/slgoodrich/sdlc-workflow",
+      "license": "MIT",
+      "category": "workflow"
     }
   ]
 }

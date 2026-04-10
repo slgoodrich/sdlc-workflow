@@ -1,9 +1,9 @@
 ---
 name: build
-description: Execute an approved implementation spec from the Technical Spec section. Implements tasks, commits, and marks complete. No writes to the issue description.
-argument-hint: <issue-id>
+description: Execute an approved implementation spec from the stream's spec.md. Implements tasks, commits locally. No push.
+argument-hint: <stream-id>
 disable-model-invocation: true
-allowed-tools: Bash(linear *) Bash(git *)
+allowed-tools: Bash(node *) Bash(git *)
 ---
 
 # /build
@@ -11,51 +11,64 @@ allowed-tools: Bash(linear *) Bash(git *)
 Execute an approved implementation spec.
 
 **Run `/refine` first.** This command executes the technical spec from
-the `## Technical Spec` section of the Linear issue description.
+the stream's `spec.md` file.
 
 ## Prerequisites
 
-- `/refine` has been run (the description has a `## Technical Spec`
-  section with Task Breakdown and Files to Modify)
+- `/refine` has been run (the stream has a `spec.md` with Task
+  Breakdown and Files to Modify)
 
 ## Context
 
-- Issue: !`linear issue view $ARGUMENTS`
+- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
+- Spec: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS spec`
 - Current branch: !`git branch --show-current`
 
 ## Standing Instructions
 
-- `/build` does NOT write body content to the Linear issue
-  description. Only a `[build-done]` completion comment at the end.
-- Never touch the `## Plan`, `## Design`, or `## Technical Spec`
-  sections. They are read-only from /build's perspective.
-- `## Technical Spec` is required. Stop if missing.
-- One issue, one build run. Do NOT create new branches during
-  `/build`. Renaming the current branch is allowed when the prefix
-  doesn't match the Linear issue's Type label (see Step 1).
+- `/build` does NOT write to stream files. The code and commits are
+  the output.
+- Never modify `plan.md`, `design.md`, or `spec.md` in the stream
+  directory. They are read-only from /build's perspective.
+- `spec.md` is required. Stop if missing or empty.
+- If the spec indicates frontend work (UI components, pages, layouts,
+  styling, user-facing changes), `design.md` is also required. Stop
+  if it is missing or empty and tell the user to run `/design` first.
+- One stream, one build run. Creating a branch from `main` is
+  allowed when no feature branch exists yet. Renaming the current
+  branch is allowed when the prefix doesn't match (see Step 1).
 - If implementation deviates from the spec, STOP and ask the user
-  before proceeding. Do NOT rewrite the Technical Spec section.
+  before proceeding. Do NOT rewrite spec.md.
 - Do NOT populate the agent selection table in Step 2 below. It is
   filled by `/customize` per project.
-- `/test` gets its file scope from `git diff`, not from Linear.
-  You do not need to record per-file progress anywhere persistent —
+- `/test` gets its file scope from `git diff`, not from the stream.
+  You do not need to record per-file progress anywhere persistent -
   just execute and commit.
 - If multiple identifiers provided, process them SEQUENTIALLY.
-  Complete all steps for one issue before moving to the next.
+  Complete all steps for one stream before moving to the next.
 
 ## Execution
 
 ### Step 1: Load context and verify prerequisites
 
-**Plan context** (optional): parse the description from the Context
-block for `## Plan > ### Acceptance Criteria`. The description may
-not have a Plan section if `/plan` was skipped.
+**Plan context** (optional): read plan.md from the stream.
 
-**Design context** (optional): parse the description for `## Design`.
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
+```
+
+The stream may not have plan content if `/plan` was skipped.
+
+**Design context** (optional): read design.md from the stream.
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design
+```
+
 Many backend tasks skip `/design`.
 
-**Technical Spec** (required): parse the description for
-`## Technical Spec`. Extract:
+**Technical Spec** (required): the spec was already loaded in the
+Context block above. Extract:
 
 - `### Task Breakdown`
 - `### Files to Modify`
@@ -63,8 +76,21 @@ Many backend tasks skip `/design`.
 - `### Dependencies`
 - `### Risks`
 
-If the Technical Spec section is missing, stop and tell the user to
-run `/refine` first.
+If spec.md is missing or empty, stop and tell the user to run
+`/refine` first.
+
+**Design check** (frontend work only): if the spec's Files to Modify
+or Task Breakdown references frontend files (components, pages,
+layouts, styles, views, templates), check that design.md has content:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design
+```
+
+If design.md is empty and the work is frontend, stop and tell the user:
+
+"This build includes frontend changes but no design spec exists.
+Run `/design $ARGUMENTS` first to define the UX specification."
 
 **Past patterns, decisions, and similar work**: try claude-mem:
 
@@ -82,8 +108,8 @@ fails, fall back to empty and log:
 [scaffold] claude-mem not available, skipping past build context
 ```
 
-**Dependency context per file**: for each file listed in the Technical
-Spec's Files to Modify section, query the code graph:
+**Dependency context per file**: for each file listed in the spec's
+Files to Modify section, query the code graph:
 
 ```
 Try: mcp__codebase-memory-mcp__trace_call_path(
@@ -102,37 +128,29 @@ git log --oneline --follow -- {file_path} | head -5
 Store as `{dependency_context}`. Note any files with significant
 history (past bugs, refactors, decisions).
 
-**Branch prefix from Type label**: derive the correct branch and
-commit prefix from the Linear issue's Type label (from the Context
-block's issue view). Use this mapping:
+**Branch prefix**: derive the branch prefix from the stream name.
+Default prefix is `feat/`. Read the stream metadata to get the stream
+name and use it for branch naming.
 
-| Linear Type | Branch prefix | Commit prefix |
-|---|---|---|
-| `Type \| Feature` | `feat/` | `feat` |
-| `Type \| Improvement` | `feat/` | `feat` |
-| `Type \| Bug` | `fix/` | `fix` |
-| unknown / missing | `feat/` | `feat` (safe fallback) |
-
-Store as `{branch_prefix}` and `{commit_prefix}` for use in later
-steps.
+Store as `{branch_prefix}` (default `feat/`) and `{commit_prefix}`
+(default `feat`).
 
 Check the current branch name (from the Context block). Expected
-form: `{prefix}{ISSUE-ID}`. If the prefix doesn't match the derived
-`{branch_prefix}`, rename the branch:
+form: `{prefix}{stream-name-slugified}`. If the prefix doesn't match
+the derived `{branch_prefix}`, rename the branch:
 
 ```bash
-git branch -m "{branch_prefix}$ARGUMENTS"
+git branch -m "{branch_prefix}{stream-name-slugified}"
 ```
-
-Example: the branch was created as `feat/LAN-42`, but the Linear
-issue is tagged `Type | Bug`. Rename to `fix/LAN-42` before any
-commits.
 
 If the current branch is already correct, do nothing.
 
 If the current branch is `main` (or the project's default branch),
-this is a misconfiguration — `/build` should never run on main.
-Stop and tell the user to switch to the feature branch first.
+create the feature branch and switch to it:
+
+```bash
+git checkout -b "{branch_prefix}{stream-name-slugified}"
+```
 
 ### Step 2: Select agent
 
@@ -142,7 +160,7 @@ Stop and tell the user to switch to the feature branch first.
 
 ### Step 3: Execute plan with checkpoints
 
-For each task in the Technical Spec's Task Breakdown:
+For each task in the spec's Task Breakdown:
 
 1. **Announce**: "Starting task N: {description}"
 
@@ -151,9 +169,9 @@ For each task in the Technical Spec's Task Breakdown:
    ```
    Task(
      subagent_type="{detected-agent}",
-     prompt="Implement task N for $ARGUMENTS.
+     prompt="Implement task N for stream $ARGUMENTS.
 
-   Task: {task description from the Technical Spec's Task Breakdown}
+   Task: {task description from the spec's Task Breakdown}
 
    ## Dependencies
    {dependency_context from codebase-memory-mcp for files in this task, or 'None'}
@@ -182,17 +200,16 @@ For each task in the Technical Spec's Task Breakdown:
 **During implementation:**
 
 - If uncertain about approach, STOP and ask the user.
-- If implementation deviates from the Technical Spec, STOP and ask
-  the user before proceeding. Do NOT rewrite the Technical Spec
-  section in the description.
-- Do NOT write to Linear during task execution. The only Linear
-  write is the final `[build-done]` comment in Step 5.
+- If implementation deviates from the spec, STOP and ask the user
+  before proceeding. Do NOT rewrite spec.md.
+- Do NOT write to the stream directory during task execution. The
+  code and commits are the output.
 
 ### Step 4: Sync with main and commit
 
 Merge main into the feature branch before committing. This catches
 conflicts while the build agent still has full implementation context
-loaded — if a conflict hits a file it just wrote, it can resolve with
+loaded - if a conflict hits a file it just wrote, it can resolve with
 intent, not archaeology.
 
 ```bash
@@ -212,15 +229,14 @@ Then stage and commit:
 git add -A
 git commit -m "{commit_prefix}({scope}): {description}
 
-$ARGUMENTS"
+stream-$ARGUMENTS"
 ```
 
-Use `{commit_prefix}` from Step 1's Type-label mapping (e.g., `feat`,
-`fix`). This matches the branch prefix so the commit type stays
-consistent with the issue type.
+Use `{commit_prefix}` from Step 1 (default `feat`). This matches the
+branch prefix so the commit type stays consistent.
 
 Use a single conventional commit covering the full implementation. If
-the scope of changes warrants multiple commits, split logically — in
+the scope of changes warrants multiple commits, split logically - in
 that case, individual commits can use different type prefixes
 (`test:` for test-only commits, `docs:` for doc-only commits) as long
 as the primary commit uses `{commit_prefix}`.
@@ -229,35 +245,26 @@ as the primary commit uses `{commit_prefix}`.
 branch and opening the PR is `/test`'s responsibility (after tests
 are written and passing).
 
-### Step 5: Summarize and mark complete
+### Step 5: Summarize
 
 Report to the user:
 
-- Tasks completed (from the Technical Spec's Task Breakdown)
+- Tasks completed (from the spec's Task Breakdown)
 - Files modified (from `git status` / `git diff`)
 - Commits made
 - Suggest next steps: `/test`, `/review`
 
-Append a single completion comment to the Linear issue:
-
-```bash
-linear issue comment add $ARGUMENTS --body "[build-done] Build complete. $(date +%Y-%m-%d)"
-```
-
-The comment is a marker only. `/test` reads the file list from
-`git diff`, not from this comment.
-
 ## Error Handling
 
-- **Technical Spec not found**: stop, tell user to run `/refine`
+- **Spec not found**: stop, tell user to run `/refine`
 - **Ambiguous scope**: ask user to clarify
 - **Deviation from spec**: stop, ask user for approval, do not
-  rewrite the Technical Spec section
+  rewrite spec.md
 
 ## Notes
 
 - `/build` focuses on implementation only
 - Run `/test` and `/review` separately after `/build` completes
-- `/build` writes zero body content to Linear — the code and commits
-  are the output. A single `[build-done]` comment marks completion.
-- `/test` reads its file scope from `git diff`, not from Linear
+- `/build` writes nothing to the stream directory - the code and
+  commits are the output
+- `/test` reads its file scope from `git diff`, not from the stream

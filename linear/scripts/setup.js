@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Scaffold plugin setup script.
+ * SDLC Linear plugin setup script.
  *
- * Invoked manually via the /scaffold command. Copies bundled templates
+ * Invoked manually via the /setup-linear command. Copies bundled templates
  * into the project's .claude/ and project root directories.
  * Idempotent — never overwrites existing files. Safe to re-run.
  *
@@ -22,10 +22,10 @@ const ROOT = process.env.CLAUDE_PLUGIN_ROOT || join(import.meta.dirname, '..');
 
 try {
   // CLAUDE_PROJECT_DIR is set in hook context. Fall back to cwd when
-  // invoked manually via /scaffold (where cwd is the project root).
+  // invoked manually via /setup-linear (where cwd is the project root).
   const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
   if (!projectDir) {
-    console.error('[scaffold] No project directory available, aborting');
+    console.error('[setup] No project directory available, aborting');
     process.exit(1);
   }
 
@@ -46,10 +46,10 @@ try {
       const destPath = join(dest, file);
       if (existsSync(destPath)) continue;
       copyFileSync(srcPath, destPath);
-      console.error(`[scaffold] Copied template: ${file} -> ${dest}`);
+      console.error(`[setup] Copied template: ${file} -> ${dest}`);
     }
   }
 } catch (e) {
-  console.error(`[scaffold] Template copy failed: ${e.message}`);
+  console.error(`[setup] Template copy failed: ${e.message}`);
   // Don't exit(1) — let the session continue even if template copy fails
 }

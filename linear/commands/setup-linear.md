@@ -1,28 +1,27 @@
 ---
-name: scaffold
-description: Install scaffold templates into the current project. Run once per project when adopting the scaffold workflow.
+name: setup-linear
+description: Install Linear-backed SDLC workflow templates into the current project. Run once per project.
 disable-model-invocation: true
 allowed-tools: Bash(node *) Bash(ls *)
 ---
 
-# /scaffold
+# /setup-linear
 
-Install the scaffold plugin's templates into the current project.
+Install the sdlc-linear plugin's templates into the current project.
 
 ## What this does
 
-Runs the scaffold setup script, which copies template files into the
-project:
+Runs the setup script, which copies template files into the project:
 
 - `.claude/commands/` — 8 workflow commands (plan, design, refine,
   build, test, review, audit, customize)
-- `.claude/rules/` — 7 rules files (quality-bar, tests,
-  error_handling, context7-lookup, git-workflow, issue-breakdown,
-  self-running-architecture)
+- `.claude/rules/` — 6 rules files (quality-bar, tests,
+  error_handling, context7-lookup, git-workflow, issue-breakdown)
+- `.claude/settings.json` — project plugin settings
 - Project root — `CLAUDE.md` and `.linear.toml` scaffolds
 
 The copy is **idempotent**. Existing files are never overwritten.
-Re-running `/scaffold` is safe and will only copy files that are
+Re-running `/setup-linear` is safe and will only copy files that are
 missing.
 
 ## Execution
@@ -41,7 +40,7 @@ The script writes its output to stderr. Each copied file produces a
 line like:
 
 ```
-[scaffold] Copied template: plan.md -> /path/to/project/.claude/commands
+[setup] Copied template: plan.md -> /path/to/project/.claude/commands
 ```
 
 Report to the user:
@@ -58,11 +57,11 @@ After templates are copied, tell the user:
 1. **Review the copied files** to confirm they match expectations.
    Look in `.claude/commands/`, `.claude/rules/`, and the project root.
 2. **Run `/customize`** to populate stack-specific CUSTOMIZE markers
-   (routing tables, Linear CLI skill, pre-commit hooks).
+   (routing tables, Linear CLI skill, pre-commit hooks, agent plugins).
 
 ## Notes
 
-- `/scaffold` is manual. The plugin does NOT install templates
+- `/setup-linear` is manual. The plugin does NOT install templates
   automatically on session start.
 - Safe to run multiple times. Existing files are preserved.
 - The setup script has zero external dependencies beyond Node's

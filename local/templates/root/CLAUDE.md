@@ -18,21 +18,22 @@
 
 ## Workflow
 
-This project uses the `scaffold` plugin for SDLC workflow.
+This project uses the `sdlc-local` plugin for SDLC workflow.
+Cross-phase state is stored in `.workflow/streams/`.
 
 **Manual phases** (run in a regular Claude Code session):
 
-- `/plan <LAN-ID>` — refine requirements
-- `/design <LAN-ID>` — UX specification
-- `/refine <LAN-ID>` — technical spec
+- `/plan <stream-id>` -- refine requirements
+- `/design <stream-id>` -- UX specification
+- `/refine <stream-id>` -- technical spec
 
 **Build phases**:
 
-- `/build` — implement
-- `/test` — write and run tests
-- `/review` — review and auto-merge on green
+- `/build <stream-id>` -- implement
+- `/test <stream-id>` -- write and run tests
+- `/review <stream-id>` -- review and auto-merge on green
 
 **Standalone commands**:
 
-- `/audit [scope]` — codebase audit (creates Linear issues for findings)
-- `/customize` — re-run if stack changes
+- `/audit [scope]` -- codebase audit
+- `/customize` -- re-run if stack changes

@@ -14,7 +14,3 @@ node_modules/
 
 # Claude
 .claude/
-
-# Other
-planning/
-REPURPOSE_PLAN.md

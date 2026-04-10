@@ -1,0 +1,9 @@
+{
+  "name": "sdlc-linear",
+  "version": "0.1.0",
+  "description": "SDLC workflow backed by Linear issue tracking",
+  "author": {
+    "name": "slgoodrich"
+  },
+  "license": "MIT"
+}
