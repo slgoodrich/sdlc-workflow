@@ -90,9 +90,12 @@ Record the detected stack for use in later steps.
 
 ### Step 2: Find applicable agents
 
-Read `~/.claude/settings.json` and check `enabledPlugins`.
+Read the **global** `~/.claude/settings.json` and inspect its
+`enabledPlugins` object. Each key is a plugin identifier
+(`{name}@{source}`), and the value is `true` (globally enabled) or
+`false` (installed but globally disabled).
 
-Match stack to relevant agent plugins:
+Match the detected stack to relevant agent plugins:
 
 | Stack | Relevant Plugins |
 |---|---|
@@ -110,24 +113,29 @@ Also check for cross-stack plugins:
 - `application-performance` (always relevant)
 - `ui-design` (if frontend detected)
 
-Note which are `true` (enabled) vs `false` (available but disabled).
-
-Globally enabled plugins (like `pr-review-toolkit`, `ai-pm-copilot`)
-are stack-neutral and apply to all projects. Stack-specific plugins
-will almost always be `false` globally and need to be enabled in the
-project's `.claude/settings.json`.
+The typical pattern: stack-neutral plugins (`pr-review-toolkit`,
+`ai-pm-copilot`, etc.) are `true` globally and apply everywhere.
+Stack-specific plugins are `false` globally -- they exist in the
+global file so Claude Code knows they're installed, but they're
+disabled to avoid noise in projects that don't need them. These are
+the ones that need to be enabled per-project.
 
 Report to the user:
 
-- Stack-specific agents found in global settings (available for enabling)
-- Which ones will be enabled in the project settings
+- Which globally-disabled plugins match this stack and will be
+  enabled in the project's `.claude/settings.json`
+- Any relevant plugins missing from the global file entirely
+  (suggest the user install them)
 
 ### Step 3: Enable agents and update routing
 
 **A. Enable chosen agents in project settings:**
 
-Write or update `.claude/settings.json` in the project root. Enable
-the stack-relevant plugins:
+The project's `.claude/settings.json` was created by `/scaffold`
+with an empty `enabledPlugins` object. Read it, then merge in the
+stack-relevant plugins that are globally disabled (`false` in
+`~/.claude/settings.json`) but needed for this project. Set each
+to `true`:
 
 ```json
 {
@@ -137,9 +145,13 @@ the stack-relevant plugins:
 }
 ```
 
-Only enable plugins that exist in `~/.claude/settings.json` (the
-global list is the source of truth for what's installed). Do not
-touch plugins already configured in the project settings.
+Rules:
+- Only enable plugins that exist in `~/.claude/settings.json` (the
+  global list is the source of truth for what's installed).
+- Do not touch plugins already configured in the project settings.
+- Do not copy globally-enabled plugins into the project file --
+  they're already active everywhere. Only locally-needed overrides
+  belong here.
 
 **B. Update agent routing in refine.md and build.md:**
 

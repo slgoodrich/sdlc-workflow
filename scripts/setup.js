@@ -32,6 +32,7 @@ try {
   const templateDirs = [
     { src: join(ROOT, 'templates', 'commands'), dest: join(projectDir, '.claude', 'commands') },
     { src: join(ROOT, 'templates', 'rules'),    dest: join(projectDir, '.claude', 'rules') },
+    { src: join(ROOT, 'templates', 'claude'),   dest: join(projectDir, '.claude') },
     { src: join(ROOT, 'templates', 'ao'),       dest: join(projectDir, '.ao') },
     { src: join(ROOT, 'templates', 'root'),     dest: projectDir },
   ];
