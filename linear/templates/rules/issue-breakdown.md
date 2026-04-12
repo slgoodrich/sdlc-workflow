@@ -137,13 +137,20 @@ further until all resulting issues are Low or Medium.
 - If infrastructure is needed (new tables, new services), that's often
   its own issue
 
-## For Each Parent Issue (Epic), Provide
+## Parent Issue (Epic) Description Format
 
-After breakdown, the parent should contain ONLY:
+After breakdown, the parent description is a **flat overview**. No
+command-owned section headers (`## Plan`, `## Design`,
+`## Technical Spec`). Those headers belong on sub-issues where the
+actual work happens.
 
+The parent should contain ONLY:
+
+- `## Original Request` (preserved unstructured user text, if any)
 - Brief summary of the feature/goal (1-2 paragraphs max)
-- Links to relevant docs, designs, or related issues
 - High-level success criteria for the whole feature
+- List of sub-issues with IDs and one-line descriptions
+- Links to relevant docs, designs, or related issues
 - Dependencies on other epics (if any)
 
 **Remove from parent after breakdown:**
@@ -152,13 +159,44 @@ After breakdown, the parent should contain ONLY:
 - File lists (move to sub-issues)
 - Edge cases (distribute to relevant sub-issues)
 - Acceptance criteria for specific pieces (move to sub-issues)
+- Any `## Plan` section that existed before breakdown (the plan was
+  distributed to sub-issues; the parent keeps only the goal and
+  success criteria as plain text)
 
-## For Each Sub-Issue, Provide
+## Sub-Issue Description Format
+
+Each sub-issue must be a self-contained unit that downstream commands
+(`/refine`, `/build`, `/test`, `/review`) can operate on. Structure
+the description with a `## Plan` section so `/refine` can find it:
+
+```markdown
+## Plan
+
+### Scope
+{what this piece does, 1-2 sentences}
+
+### Files
+- path/to/file1 - {what changes}
+- path/to/file2 - {what changes}
+
+### Acceptance Criteria
+- {criterion 1}
+- {criterion 2}
+
+### Edge Cases
+- {case 1}
+
+### Dependencies
+{blocking sub-issues, or "None"}
+```
+
+The `## Plan` heading is required. `/refine` checks for it before
+producing a Technical Spec. Without it, the sub-issue is a dead end
+in the command pipeline.
+
+Each sub-issue must also have:
 
 - Clear title (action-oriented)
-- Acceptance criteria (how do I know it's done?)
-- Dependencies (which issues need to be done first?)
-- Context: what files/areas of the codebase are involved
 - Labels: Type + Scope + Complexity + Version (all required)
 
 ## Don't

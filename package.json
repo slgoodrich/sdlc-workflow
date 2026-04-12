@@ -1,6 +1,6 @@
 {
   "name": "sdlc-workflow",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "SDLC workflow commands for Claude Code",
   "author": "slgoodrich",
   "license": "MIT",
