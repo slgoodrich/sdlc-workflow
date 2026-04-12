@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Read-only codebase audit for patterns, technical debt, security, and performance. Creates Linear issues for Critical and High findings.
+description: Read-only codebase audit for patterns, technical debt, security, and performance. Creates Linear issues for all findings.
 argument-hint: [scope]
 disable-model-invocation: false
 allowed-tools: Bash(linear *) Bash(git *) Bash(grep *)
@@ -20,16 +20,20 @@ opportunities.
 ## Context
 
 - Argument / scope: $ARGUMENTS
-- Existing audit issues: !`linear issue list --label "Audit" --limit 20`
+- Existing open issues: !`linear issue list -s backlog -s unstarted -s started --limit 50 --no-pager`
 
 ## Standing Instructions
 
 - This command is READ-ONLY for the codebase. Do NOT fix issues.
 - Findings are recommendations, not mandates.
-- Only Critical and High findings become Linear issues. Medium and
-  Low findings are reported inline but not persisted.
-- Before creating a Linear issue, check the existing audit issues
-  list in the Context block for duplicates by title.
+- All findings become Linear issues. The user decides what is worth
+  fixing in Linear.
+- Use the correct Linear issue type for each finding: Bug for
+  defects/vulnerabilities, Improvement for code quality/performance,
+  Feature for missing capabilities. Do NOT use "Audit" as a label
+  -- it does not exist.
+- Before creating a Linear issue, check the existing issues list in
+  the Context block for duplicates by title or description.
 - Use extended thinking for analytical steps (pattern consistency,
   security, performance).
 - This is the only command with `disable-model-invocation: false`
@@ -231,24 +235,44 @@ Present findings to the user:
 
 ### Step 10: Record findings as Linear issues
 
-Create a tracked Linear issue for each **Critical** and **High**
-finding. Medium and Low findings are reported above but not persisted.
+Create a tracked Linear issue for every finding.
 
-**A. Check against existing audit issues (from Context block):**
+**A. Check against existing issues (from Context block):**
 
-The Context block pre-fetched the list of existing audit-labeled
-Linear issues. For each Critical/High finding, search that list for
-a matching title (`Audit: {finding title}`). If a match exists and
-is still open, skip — do not create a duplicate.
+The Context block pre-fetched the list of existing Linear issues.
+For each finding, check that list for an existing issue covering
+the same file and problem. If a match exists and is
+still open, skip -- do not create a duplicate.
 
-**B. Create the Linear issue:**
+**B. Classify and create the Linear issue:**
+
+Pick the correct type label based on the finding:
+
+| Finding type | Type label |
+|---|---|
+| Security vulnerability, crash, data loss risk | Bug |
+| Code quality, performance, missing validation | Improvement |
+| Missing capability, missing test coverage | Feature |
+
+Estimate complexity from the fix scope (this is about effort, not
+severity -- do not use complexity labels to indicate severity):
+
+| Fix scope | Complexity label |
+|---|---|
+| 1-2 files, single function | Low |
+| 3-4 files, cross-cutting | Medium |
+| 5+ files, architectural | High |
 
 ```bash
 linear issue create \
-  --title "Audit: {finding title}" \
-  --label "Audit" \
-  --label "{Critical | High}" \
-  --description "Found by /audit on $(date +%Y-%m-%d). Location: {file}:{line}.
+  --title "{concise finding title}" \
+  --label "{Bug | Improvement | Feature}" \
+  --label "{Low | Medium | High}" \
+  --label "BE" \
+  --description "Found by /audit on $(date +%Y-%m-%d).
+
+**Severity**: {Critical | High | Medium | Low}
+**Location**: {file}:{line}
 
 {finding description}
 
@@ -258,13 +282,11 @@ linear issue create \
 
 **C. Track created issue IDs for the summary.**
 
-After processing all Critical/High findings, report to the user:
+After processing all findings, report to the user:
 
 - Count of findings by severity
-- Number of Linear issues created (Critical + High only)
+- Number of Linear issues created
 - Number skipped as duplicates
-- Reminder: Medium and Low findings were reported inline above but
-  are not tracked in Linear
 
 ## Notes
 
@@ -273,9 +295,8 @@ After processing all Critical/High findings, report to the user:
 - Findings are recommendations, not mandates
 - Use judgment on severity (context matters)
 - Run regularly (weekly recommended)
-- Critical and High findings become tracked Linear issues labeled
-  `Audit`
-- Medium and Low findings appear in the report but are not persisted
+- All findings become tracked Linear issues typed as Bug,
+  Improvement, or Feature (whichever fits the finding)
 - Previous audit findings are looked up via `claude-mem` (if
   installed) to flag recurring issues
 - Extended thinking is enabled via `ultrathink` above

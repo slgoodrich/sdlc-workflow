@@ -13,10 +13,10 @@ breakdown for high-complexity work.**
 
 ## When to Use
 
-- After `/plan` has written `plan.md` to the stream (if product
-  planning was needed)
-- After `/design` has written `design.md` (for frontend work)
-- Directly, for technical work that doesn't need product planning
+- After `/plan` and/or `/design` have written their files (if those
+  steps were needed)
+- Directly, for simple or technical work that doesn't need upstream
+  planning
 - This command reads upstream files if they exist and produces the
   technical HOW as `spec.md` in the stream directory
 
@@ -41,8 +41,16 @@ breakdown for high-complexity work.**
 
 ## Standing Instructions
 
-- `plan.md` is required. Stop and tell the user to run `/plan` first
-  if the stream's plan.md is empty or missing.
+- `plan.md` is not required. If present, use it for context. If
+  missing, check whether the user should run `/plan` first:
+  - **Skip /plan** (proceed directly): bug fixes, small refactors,
+    tech debt with an obvious fix, or any stream where the "what" and
+    "why" are already clear from the title and description.
+  - **Recommend /plan first**: new features where scope is undefined,
+    work with product/UX implications, or streams where the problem
+    itself needs clarification.
+  Use judgment. If the stream has enough context to write a spec,
+  write the spec.
 - `design.md` is optional. Backend work may skip `/design`.
 - **For breakdown decisions (when to split and how), read
   `.claude/rules/issue-breakdown.md` first.** That document is the
@@ -60,22 +68,13 @@ breakdown for high-complexity work.**
 
 ## Execution
 
-### Step 0: Verify prerequisites
-
-Verify plan.md is non-empty:
-
-```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
-```
-
-If the plan is empty, stop and tell the user to run `/plan` first.
-
 ### Step 1: Load context
 
-**Plan context (required)**: Parse the plan from the Context block
-for `### Problem Statement`, `### Success Criteria`, and
-`### Acceptance Criteria`. If the plan is empty, stop and tell the
-user to run `/plan` first.
+**Plan context**: Parse the plan from the Context block for
+`### Problem Statement`, `### Success Criteria`, and
+`### Acceptance Criteria`. If plan.md is empty or missing, assess
+whether one is needed (see Standing Instructions). If the stream
+has enough context to proceed, use the title and metadata instead.
 
 **Design context (optional)**: Check if `design.md` has content. If
 present, use it for UX context. If not, continue - `/refine` can be
@@ -103,7 +102,8 @@ fails, fall back to empty and log:
 Heuristic (Low 1-2 files, Medium 3-4, High 5+) to classify this
 work.
 
-From the plan and (optional) design, determine:
+From the plan (if present), design (if present), or the stream
+title and metadata, determine:
 
 1. **Scope**: How many files will this touch?
 2. **Nature**: What area of the codebase?

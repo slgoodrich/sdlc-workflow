@@ -13,11 +13,10 @@ breakdown for high-complexity work.**
 
 ## When to Use
 
-- After `/plan` has written the `## Plan` section to the Linear issue
-  description (if product planning was needed)
-- After `/design` has written the `## Design` section (for frontend
-  work)
-- Directly, for technical work that doesn't need product planning
+- After `/plan` and/or `/design` have written their sections (if
+  those steps were needed)
+- Directly, for simple or technical work that doesn't need upstream
+  planning
 - This command reads upstream sections if they exist and produces the
   technical HOW as a `## Technical Spec` section in the description
 
@@ -41,8 +40,16 @@ breakdown for high-complexity work.**
 
 - Never overwrite sections owned by other commands (`## Plan`,
   `## Design`). Only touch `## Technical Spec`.
-- `## Plan` is required. Stop and tell the user to run `/plan` first
-  if the description lacks a Plan section.
+- `## Plan` is not required. If present, use it for context. If
+  missing, check whether the user should run `/plan` first:
+  - **Skip /plan** (proceed directly): bug fixes, small refactors,
+    tech debt with an obvious fix, or any issue where the "what" and
+    "why" are already clear from the title and description.
+  - **Recommend /plan first**: new features where scope is undefined,
+    work with product/UX implications, or issues where the problem
+    itself needs clarification.
+  Use judgment. If the issue has enough context to write a spec,
+  write the spec.
 - `## Design` is optional. Backend work may skip `/design`.
 - **For breakdown decisions (when to split and how), read
   `.claude/rules/issue-breakdown.md` first.** That document is the
@@ -64,10 +71,11 @@ breakdown for high-complexity work.**
 
 ### Step 1: Load context
 
-**Plan context (required)**: Parse the description from the Context
-block for `## Plan > ### Problem Statement`, `### Success Criteria`,
-and `### Acceptance Criteria`. If the Plan section is missing, stop
-and tell the user to run `/plan` first.
+**Plan context**: Parse the description from the Context block for
+`## Plan > ### Problem Statement`, `### Success Criteria`, and
+`### Acceptance Criteria`. If the Plan section is missing, assess
+whether one is needed (see Standing Instructions). If the issue has
+enough context to proceed, use the title and description instead.
 
 **Design context (optional)**: Parse the description for `## Design`.
 If present, use it for UX context. If not, continue — `/refine` can
@@ -95,7 +103,8 @@ fails, fall back to empty and log:
 Heuristic (Low 1-2 files, Medium 3-4, High 5+) to classify this
 work.
 
-From the Plan section and (optional) Design section, determine:
+From the Plan section (if present), Design section (if present), or
+the issue title and description, determine:
 
 1. **Scope**: How many files will this touch?
 2. **Nature**: What area of the codebase?
@@ -263,7 +272,7 @@ Existing sections may include any subset of:
 **Assemble the full new description** in canonical section order:
 
 1. `## Original Request` (preserved if exists)
-2. `## Plan` (preserved, required)
+2. `## Plan` (preserved if exists)
 3. `## Design` (preserved if exists)
 4. The new `## Technical Spec` section (from above)
 
