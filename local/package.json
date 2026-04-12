@@ -1,6 +1,6 @@
 {
   "name": "sdlc-local",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SDLC workflow backed by local markdown files",
   "author": "slgoodrich",
   "license": "MIT",

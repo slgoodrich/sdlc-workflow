@@ -62,8 +62,19 @@ Run these commands first, then restart Claude Code:
 
 ### Step 3: Install missing plugins
 
-For each plugin in `available` that is NOT in the installed set,
-run:
+Only install plugins from these sources:
+
+1. **All** plugins from `claude-code-workflows` (wshobson/agents)
+2. **All** plugins from `ai-pm-copilot` (slgoodrich/agents)
+3. These **specific** official plugins:
+   - `commit-commands@claude-plugins-official`
+   - `pr-review-toolkit@claude-plugins-official`
+   - `context7@claude-plugins-official`
+
+Do NOT install plugins from any other marketplace (e.g.,
+`agent-toolkit`, `sdlc-workflow`, or other third-party sources).
+
+For each matching plugin that is NOT in the installed set, run:
 
 ```bash
 claude plugin install {pluginId}
@@ -76,12 +87,6 @@ Installing {pluginId}... done
 ```
 
 Skip any that are already installed.
-
-Also ensure these specific official plugins are installed:
-
-- `commit-commands@claude-plugins-official`
-- `pr-review-toolkit@claude-plugins-official`
-- `context7@claude-plugins-official`
 
 ### Step 4: Configure global settings
 
