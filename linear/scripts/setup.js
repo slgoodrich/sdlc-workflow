@@ -51,5 +51,5 @@ try {
   }
 } catch (e) {
   console.error(`[setup] Template copy failed: ${e.message}`);
-  // Don't exit(1) — let the session continue even if template copy fails
+  process.exit(1);
 }

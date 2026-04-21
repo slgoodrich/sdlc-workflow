@@ -100,4 +100,5 @@ try {
 
 } catch (e) {
   console.error(`[setup] Setup failed: ${e.message}`);
+  process.exit(1);
 }
