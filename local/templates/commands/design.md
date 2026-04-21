@@ -38,9 +38,9 @@ Writes a `design.md` file to the stream directory with:
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
-- Plan: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan`
-- Existing design (if any): !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
+- Plan: !`node .workflow/bin/stream.js read $ARGUMENTS plan`
+- Existing design (if any): !`node .workflow/bin/stream.js read $ARGUMENTS design`
 
 ## Standing Instructions
 
@@ -61,7 +61,7 @@ Writes a `design.md` file to the stream directory with:
 Verify plan.md is non-empty:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
+node .workflow/bin/stream.js read $ARGUMENTS plan
 ```
 
 If the plan is empty, stop and tell the user to run `/plan` first.

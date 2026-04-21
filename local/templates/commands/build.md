@@ -20,8 +20,8 @@ the stream's `spec.md` file.
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
-- Spec: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS spec`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
+- Spec: !`node .workflow/bin/stream.js read $ARGUMENTS spec`
 - Current branch: !`git branch --show-current`
 
 ## Standing Instructions
@@ -54,7 +54,7 @@ the stream's `spec.md` file.
 **Plan context** (optional): read plan.md from the stream.
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
+node .workflow/bin/stream.js read $ARGUMENTS plan
 ```
 
 The stream may not have plan content if `/plan` was skipped.
@@ -62,7 +62,7 @@ The stream may not have plan content if `/plan` was skipped.
 **Design context** (optional): read design.md from the stream.
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design
+node .workflow/bin/stream.js read $ARGUMENTS design
 ```
 
 Many backend tasks skip `/design`.
@@ -84,7 +84,7 @@ or Task Breakdown references frontend files (components, pages,
 layouts, styles, views, templates), check that design.md has content:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design
+node .workflow/bin/stream.js read $ARGUMENTS design
 ```
 
 If design.md is empty and the work is frontend, stop and tell the user:

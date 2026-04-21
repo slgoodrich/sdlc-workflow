@@ -19,11 +19,15 @@ Runs the setup script, which copies template files into the project:
   error_handling, context7-lookup, git-workflow, issue-breakdown)
 - `.claude/settings.json` -- project plugin settings
 - `.workflow/` -- stream state directory (created if missing)
+- `.workflow/bin/stream.js` -- stream management CLI
+  (overwritten on each run to pick up plugin updates)
 - Project root -- `CLAUDE.md` scaffold
 
-The copy is **idempotent**. Existing files are never overwritten.
-Re-running `/setup-local` is safe and will only copy files that are
-missing.
+Template files are copied **idempotently** -- existing files are
+never overwritten. Re-running `/setup-local` is safe and will only
+copy templates that are missing. `stream.js` is the exception: it
+is always overwritten, because it's internal tooling and users
+shouldn't edit it.
 
 ## Execution
 
