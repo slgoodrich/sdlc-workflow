@@ -15,8 +15,8 @@ Refine product requirements for a work item. Writes the plan to
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
-- Existing plan (if any): !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
+- Existing plan (if any): !`node .workflow/bin/stream.js read $ARGUMENTS plan`
 
 ## Standing Instructions
 
@@ -47,7 +47,7 @@ Refine product requirements for a work item. Writes the plan to
 create one first:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "problem statement"
+node .workflow/bin/stream.js create "problem statement"
 ```
 
 The create command prints the new stream ID to stderr as
@@ -57,7 +57,7 @@ commands.
 Verify the stream exists:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta
+node .workflow/bin/stream.js read $ARGUMENTS meta
 ```
 
 ### Step 1: Load past context
@@ -170,7 +170,7 @@ Verify each piece fits the Low/Medium complexity heuristic from
 For each sub-item:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "{action-oriented title}" --parent $ARGUMENTS
+node .workflow/bin/stream.js create "{action-oriented title}" --parent $ARGUMENTS
 ```
 
 The CLI assigns the next child ID automatically (1a, 1b, 1c, etc.).

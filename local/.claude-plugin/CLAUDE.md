@@ -53,14 +53,15 @@ and spec.md.
 
 ## Stream CLI
 
-Streams are managed via the CLI at `scripts/stream.js`:
+Streams are managed via a CLI copied into the project at
+`.workflow/bin/stream.js` by `/setup-local`:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "feature name"
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "sub-task" --parent 1
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" list
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" archive 1a
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read 1 plan|design|spec|meta
+node .workflow/bin/stream.js create "feature name"
+node .workflow/bin/stream.js create "sub-task" --parent 1
+node .workflow/bin/stream.js list
+node .workflow/bin/stream.js archive 1a
+node .workflow/bin/stream.js read 1 plan|design|spec|meta
 ```
 
 Top-level stream IDs are auto-incrementing integers (1, 2, 3).

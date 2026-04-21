@@ -62,6 +62,18 @@ try {
 
   mkdirSync(streamsDir, { recursive: true });
 
+  // --- Copy stream.js (overwrite; internal tooling, not user-editable) ---
+
+  const binDir = join(workflowDir, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const streamSrc = join(ROOT, 'scripts', 'stream.js');
+  const streamDest = join(binDir, 'stream.js');
+  copyFileSync(streamSrc, streamDest);
+  // Declare stream.js as ESM so node doesn't walk up to the project's
+  // package.json (which may be missing or set to CommonJS).
+  writeFileSync(join(binDir, 'package.json'), '{"type":"module"}\n');
+  console.error(`[setup] Copied stream.js -> ${binDir}`);
+
   if (!existsSync(statePath)) {
     const initialState = {
       next_id: 1,

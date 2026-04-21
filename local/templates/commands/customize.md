@@ -577,7 +577,7 @@ Report to the user in this structure:
    agent makes best-effort inferences from project structure.
 
 2. Try the full workflow on a work stream:
-   - Create a stream: `node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "my feature"`
+   - Create a stream: `node .workflow/bin/stream.js create "my feature"`
    - Run `/plan` to capture requirements
    - Run `/design`, `/refine` as needed
    - Run `/build`, `/test`, `/review` to implement and merge

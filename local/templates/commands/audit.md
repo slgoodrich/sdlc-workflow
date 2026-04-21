@@ -260,7 +260,7 @@ AskUserQuestion(
 **If "Yes"**: for each finding the user selects, create a stream:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "Audit: {finding title}"
+node .workflow/bin/stream.js create "Audit: {finding title}"
 ```
 
 **C. Report to the user:**

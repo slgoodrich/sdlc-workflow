@@ -13,7 +13,7 @@ specialist agents.
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
 - Changed files on this branch: !`git diff --name-only $(git merge-base HEAD main 2>/dev/null || echo HEAD~1)`
 - Uncommitted changes: !`git diff --name-only HEAD`
 
@@ -58,8 +58,8 @@ specify.
 Read the stream's plan and spec files for intent context:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS spec
+node .workflow/bin/stream.js read $ARGUMENTS plan
+node .workflow/bin/stream.js read $ARGUMENTS spec
 ```
 
 Extract:

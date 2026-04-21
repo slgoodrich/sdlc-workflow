@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Prescriptive SDLC workflow commands for Claude Code. Choose Linear-backed or local file-backed.",
-    "version": "0.1.2"
+    "version": "0.1.3"
   },
   "plugins": [
     {
       "name": "sdlc-linear",
       "source": "./linear",
       "description": "SDLC workflow backed by Linear issue tracking. Cross-phase state lives in Linear issue descriptions and comments.",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "author": {
         "name": "Steve Goodrich",
         "url": "https://github.com/slgoodrich"
@@ -26,7 +26,7 @@
       "name": "sdlc-local",
       "source": "./local",
       "description": "SDLC workflow backed by local markdown files. Cross-phase state lives in .workflow/streams/ directories.",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "author": {
         "name": "Steve Goodrich",
         "url": "https://github.com/slgoodrich"

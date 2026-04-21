@@ -21,7 +21,7 @@ NOT how or why it was built.
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
 - PR state: !`gh pr view --json state,number,url 2>/dev/null || echo "no-pr"`
 
 ## Standing Instructions
@@ -72,8 +72,8 @@ review. Store the path as `{diff_file}`.
 Read the stream's plan and spec for review context:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS spec
+node .workflow/bin/stream.js read $ARGUMENTS plan
+node .workflow/bin/stream.js read $ARGUMENTS spec
 ```
 
 Extract:
@@ -547,7 +547,7 @@ git branch -D "$FEATURE_BRANCH"
 **E. Optionally archive the stream:**
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" archive $ARGUMENTS
+node .workflow/bin/stream.js archive $ARGUMENTS
 ```
 
 ### Step 10: Report to the user

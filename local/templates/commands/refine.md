@@ -34,10 +34,10 @@ breakdown for high-complexity work.**
 
 ## Context
 
-- Stream metadata: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS meta`
-- Plan: !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS plan`
-- Design (if exists): !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS design`
-- Existing spec (if any): !`node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" read $ARGUMENTS spec`
+- Stream metadata: !`node .workflow/bin/stream.js read $ARGUMENTS meta`
+- Plan: !`node .workflow/bin/stream.js read $ARGUMENTS plan`
+- Design (if exists): !`node .workflow/bin/stream.js read $ARGUMENTS design`
+- Existing spec (if any): !`node .workflow/bin/stream.js read $ARGUMENTS spec`
 
 ## Standing Instructions
 
@@ -149,7 +149,7 @@ Target: Each piece should be 1-4 files (Low or Medium complexity per
 For each piece:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/stream.js" create "{specific action}" --parent $ARGUMENTS
+node .workflow/bin/stream.js create "{specific action}" --parent $ARGUMENTS
 ```
 
 The CLI assigns the next child ID automatically (1a, 1b, 1c, etc.).
